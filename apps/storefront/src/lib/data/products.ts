@@ -86,9 +86,17 @@ export const listProducts = async ({
 }
 
 /**
- * This will fetch 100 products to the Next.js cache and sort them based on the sortBy parameter.
- * It will then return the paginated products based on the page and limit parameters.
+ * Fetches the matching products, sorts them, then returns the requested page.
+ *
+ * Sorting has to happen across the whole result set (price ordering can't be
+ * derived from a single page), so the fetch limit must cover the catalogue —
+ * it is 207 products and served from the local snapshot, so this is cheap.
+ * Previously this fetched a fixed 100 with the offset pinned to 0 while still
+ * reporting the full count, which hid every product past the 100th and made
+ * the pagination control link pages that rendered an empty grid.
  */
+const SORT_FETCH_LIMIT = 1000
+
 export const listProductsWithSort = async ({
   page = 0,
   queryParams,
@@ -112,7 +120,7 @@ export const listProductsWithSort = async ({
     pageParam: 0,
     queryParams: {
       ...queryParams,
-      limit: 100,
+      limit: SORT_FETCH_LIMIT,
     },
     countryCode,
   })

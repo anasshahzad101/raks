@@ -22,9 +22,41 @@ import regionsJson from "../content/catalog/regions.json"
 type AnyRecord = Record<string, any>
 
 const products = productsJson as AnyRecord[]
-const categories = categoriesJson as AnyRecord[]
 const collections = collectionsJson as AnyRecord[]
 const regions = regionsJson as AnyRecord[]
+
+/**
+ * Rebuild the full `parent_category` chain.
+ *
+ * Medusa only expands one level of `parent_category`, however deeply the export
+ * asks for it, so depth-3 categories arrive with a parent whose own parent is
+ * missing. Consumers that walk `cur.parent_category` (categoryPath(),
+ * generateStaticParams(), breadcrumbs) would then emit truncated URLs such as
+ * /product-category/bras/padded-bra/ instead of the indexed
+ * /product-category/lingerie/bras/padded-bra/.
+ *
+ * The id graph is intact, so relink the objects by `parent_category_id`. Cloned
+ * first so the JSON import is not mutated, and depth-guarded against cycles.
+ */
+const categories: AnyRecord[] = (() => {
+  const list = (categoriesJson as AnyRecord[]).map((c) => ({ ...c }))
+  const byId = new Map(list.map((c) => [c.id, c]))
+
+  for (const category of list) {
+    let cursor = category
+    let depth = 0
+
+    while (cursor?.parent_category_id && depth < 10) {
+      const parent = byId.get(cursor.parent_category_id)
+      if (!parent) break
+      cursor.parent_category = parent
+      cursor = parent
+      depth++
+    }
+  }
+
+  return list
+})()
 
 /** Normalise a query value that may arrive as a scalar or an array. */
 function toArray(value: unknown): string[] {

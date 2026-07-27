@@ -44,7 +44,11 @@ export const retrieveCustomer =
   async (): Promise<HttpTypes.StoreCustomer | null> => {
     const authHeaders = await getAuthHeaders()
 
-    if (!authHeaders) return null
+    // getAuthHeaders() returns `{}` for anonymous visitors, which is truthy —
+    // testing the object alone never short-circuited, so every render fired a
+    // request for a customer that cannot exist (and, with no backend, waited
+    // on a refused connection). Test for the header itself.
+    if (!("authorization" in authHeaders)) return null
 
     const headers = {
       ...authHeaders,

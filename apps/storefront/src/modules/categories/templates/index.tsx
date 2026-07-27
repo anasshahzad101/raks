@@ -49,15 +49,16 @@ export default async function CategoryTemplate({
   )
   const faqs = descFaqs.length ? descFaqs : getCategoryFaqs(category.name)
 
-  // Load the category's products (up to 100) sorted, then filter sizes on the
-  // client. NOTE: categories with more than 100 products are capped here.
+  // Load the category's products sorted, then filter sizes on the client. The
+  // limit must exceed the largest category (nightwear, 123) or the header count
+  // contradicts the grid — it read "123 products" while rendering only 100.
   const {
     response: { products, count },
   } = await listProductsWithSort({
     page: 1,
     queryParams: {
       category_id: [category.id],
-      limit: 100,
+      limit: 250,
       fields: CATEGORY_PRODUCT_FIELDS,
     } as HttpTypes.FindParams & HttpTypes.StoreProductParams,
     sortBy: sort,

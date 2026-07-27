@@ -57,8 +57,10 @@ export default function BlogIndex() {
             <LocalizedClientLink key={post.slug} href={post.url} className="group block">
               <div className="aspect-[16/10] overflow-hidden rounded-large bg-bronze-100 mb-4">
                 {post.thumbnail && (
+                  // Lazy: this grid renders every remaining post, so eager
+                  // loading pulled ~116 full-size originals (~76MB) at once.
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={post.thumbnail} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img src={post.thumbnail} alt={post.title} loading="lazy" decoding="async" width={640} height={400} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                 )}
               </div>
               <p className="text-[11px] uppercase tracking-wider text-bronze-600 mb-2">{formatDate(post.date)}</p>

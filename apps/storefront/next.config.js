@@ -14,6 +14,15 @@ const S3_PATHNAME = process.env.MEDUSA_CLOUD_S3_PATHNAME
  */
 const nextConfig = {
   reactStrictMode: true,
+  // Managed hosts that boot the app through Passenger run a startup FILE, and
+  // their Next.js preset expects `.next/standalone/server.js`. Standalone also
+  // ships a pruned node_modules, so the deployed app does not depend on the
+  // workspace install being present.
+  output: "standalone",
+  // node_modules is hoisted to the monorepo root, so tracing must start there or
+  // standalone would be built without its dependencies. This also silences the
+  // "inferred workspace root" warning caused by lockfiles above the repo.
+  outputFileTracingRoot: require("path").join(__dirname, "../.."),
   // Preserve the exact WooCommerce URL shape (every indexed URL ends with "/").
   trailingSlash: true,
   async redirects() {

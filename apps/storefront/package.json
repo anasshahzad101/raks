@@ -10,6 +10,7 @@
   "scripts": {
     "dev": "next dev --turbopack -p 8000",
     "build": "next build",
+    "postbuild": "node scripts/postbuild-standalone.mjs",
     "start": "next start",
     "lint": "next lint",
     "analyze": "ANALYZE=true next build",

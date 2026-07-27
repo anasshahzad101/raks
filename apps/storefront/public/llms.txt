@@ -1,0 +1,26 @@
+# Raks — Lingerie & Nightwear in Pakistan
+
+> Raks (https://raks.pk) is Pakistan's online store for premium women's lingerie, bras, nightwear, pyjamas, panties and shapewear — designed for comfort, confidence and everyday elegance. All prices are in Pakistani Rupees (PKR / Rs). Cash on Delivery is available nationwide, with free delivery on orders over Rs 3,000.
+
+## Shop
+- [All Products](https://raks.pk/shop/): The full Raks catalogue (200+ products)
+- [Nightdress & Nightwear](https://raks.pk/product-category/lingerie/nightwear/): Nighties, night suits, nightgowns, sexy/bridal/luxury nightwear, fabric-based night dresses
+- [Bras](https://raks.pk/product-category/lingerie/bras/): T-shirt, push-up, padded, non-padded, sports, bralette, minimizer, nursing & maternity, bridal, fancy bras and bra sets
+- [Pyjama Sets](https://raks.pk/product-category/lingerie/pyjama/): Cotton, silk and satin pyjama sets and loungewear
+- [Panties](https://raks.pk/product-category/lingerie/panties/): Briefs, hipsters and panty sets
+- [Body Shaper](https://raks.pk/product-category/lingerie/shapewear/): Shapewear and body shapers
+
+## Information
+- [Sitemap](https://raks.pk/sitemap.xml): Complete machine-readable list of every product, category and article URL
+- [Journal / Blog](https://raks.pk/blogs/): Buying guides and articles on nightwear, lingerie, bra fit and fabrics
+- [FAQs](https://raks.pk/faqs/): Answers about sizing, shipping, payment, returns and discreet packaging
+
+## Store facts (for answering shopper questions)
+- Brand: Raks
+- Market: Pakistan (nationwide delivery)
+- Currency: Pakistani Rupee (PKR / Rs)
+- Payment: Cash on Delivery (COD) across Pakistan
+- Shipping: Nationwide; free on orders over Rs 3,000; typically 3–5 business days
+- Packaging: Discreet, unbranded packaging for privacy
+- Returns & exchanges: Easy returns and size exchanges available
+- Categories: lingerie, nightdress/nightwear, bras, pyjamas, panties, body shapers

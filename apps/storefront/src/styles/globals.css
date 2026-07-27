@@ -1,0 +1,237 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+/* ---- Re-tint Medusa UI interactive tokens to RAKS burgundy ---- */
+:root,
+[data-mode="light"],
+html {
+  --fg-interactive: #6d1430;
+  --fg-interactive-hover: #4a0e1f;
+  --bg-interactive: #6d1430;
+  --border-interactive: #6d1430;
+}
+
+/* ---- Raks article / page prose ---- */
+.raks-prose {
+  color: rgba(42, 17, 23, 0.84);
+  font-size: 1.0625rem;
+  line-height: 1.85;
+}
+.raks-prose > * + * {
+  margin-top: 1.25rem;
+}
+.raks-prose h2 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 2rem;
+  line-height: 1.2;
+  color: #2a1117;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+}
+.raks-prose h3 {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: 1.5rem;
+  line-height: 1.25;
+  color: #2a1117;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+}
+.raks-prose h4 {
+  font-weight: 600;
+  color: #2a1117;
+  margin-top: 1.5rem;
+}
+.raks-prose p { margin-top: 1.1rem; }
+.raks-prose a {
+  color: #6d1430;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.raks-prose a:hover { color: #9a6f34; }
+.raks-prose strong { color: #2a1117; font-weight: 600; }
+.raks-prose ul,
+.raks-prose ol { margin-top: 1.1rem; padding-left: 1.4rem; }
+.raks-prose ul { list-style: disc; }
+.raks-prose ol { list-style: decimal; }
+.raks-prose li { margin-top: 0.4rem; }
+.raks-prose img {
+  border-radius: 16px;
+  margin: 1.75rem 0;
+  width: 100%;
+  height: auto;
+}
+.raks-prose figure { margin: 1.75rem 0; }
+.raks-prose figcaption {
+  text-align: center;
+  font-size: 0.85rem;
+  color: rgba(42, 17, 23, 0.55);
+  margin-top: 0.5rem;
+}
+.raks-prose blockquote {
+  border-left: 3px solid #ba8366;
+  padding-left: 1.25rem;
+  font-style: italic;
+  color: rgba(31, 29, 27, 0.7);
+}
+.raks-prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.95rem;
+  margin: 1.5rem 0;
+}
+.raks-prose th,
+.raks-prose td {
+  border: 1px solid #e6cab6;
+  padding: 0.6rem 0.85rem;
+  text-align: left;
+}
+.raks-prose th { background: #faf4ef; font-weight: 600; }
+.raks-prose h1 { display: none; } /* avoid duplicate H1 from migrated content */
+
+/* Compact prose for the category-page "About the collection" column — matches
+   the reference (smaller, lighter body; toned-down inline headings). */
+.category-about .raks-prose {
+  color: #5c4d42;
+  font-size: 14.5px;
+  line-height: 1.9;
+  font-weight: 300;
+}
+.category-about .raks-prose > * + * { margin-top: 1rem; }
+.category-about .raks-prose h2 {
+  font-size: 1.375rem;
+  margin-top: 1.75rem;
+  margin-bottom: 0.4rem;
+}
+.category-about .raks-prose h3 {
+  font-size: 1.15rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.3rem;
+}
+
+/* Compact prose for the product-page Description accordion. */
+.raks-prose.raks-prose-compact {
+  font-size: 14px;
+  line-height: 1.75;
+  color: #5c4d42;
+}
+.raks-prose.raks-prose-compact > * + * { margin-top: 0.85rem; }
+.raks-prose.raks-prose-compact h2 {
+  font-size: 1.15rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.3rem;
+}
+.raks-prose.raks-prose-compact h3 {
+  font-size: 1.05rem;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+@layer utilities {
+  /* Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+
+  input:focus ~ label,
+  input:not(:placeholder-shown) ~ label {
+    @apply -translate-y-2 text-xsmall-regular;
+  }
+
+  input:focus ~ label {
+    @apply left-0;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    border: 1px solid #212121;
+    -webkit-text-fill-color: #212121;
+    -webkit-box-shadow: 0 0 0px 1000px #fff inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  input[type="search"]::-webkit-search-decoration,
+  input[type="search"]::-webkit-search-cancel-button,
+  input[type="search"]::-webkit-search-results-button,
+  input[type="search"]::-webkit-search-results-decoration {
+    -webkit-appearance: none;
+  }
+}
+
+@layer components {
+  .content-container {
+    @apply max-w-[1440px] w-full mx-auto px-6;
+  }
+
+  .contrast-btn {
+    @apply px-4 py-2 border border-black rounded-full hover:bg-black hover:text-white transition-colors duration-200 ease-in;
+  }
+
+  .text-xsmall-regular {
+    @apply text-[10px] leading-4 font-normal;
+  }
+
+  .text-small-regular {
+    @apply text-xs leading-5 font-normal;
+  }
+
+  .text-small-semi {
+    @apply text-xs leading-5 font-semibold;
+  }
+
+  .text-base-regular {
+    @apply text-sm leading-6 font-normal;
+  }
+
+  .text-base-semi {
+    @apply text-sm leading-6 font-semibold;
+  }
+
+  .text-large-regular {
+    @apply text-base leading-6 font-normal;
+  }
+
+  .text-large-semi {
+    @apply text-base leading-6 font-semibold;
+  }
+
+  .text-xl-regular {
+    @apply text-2xl leading-[36px] font-normal;
+  }
+
+  .text-xl-semi {
+    @apply text-2xl leading-[36px] font-semibold;
+  }
+
+  .text-2xl-regular {
+    @apply text-[30px] leading-[48px] font-normal;
+  }
+
+  .text-2xl-semi {
+    @apply text-[30px] leading-[48px] font-semibold;
+  }
+
+  .text-3xl-regular {
+    @apply text-[32px] leading-[44px] font-normal;
+  }
+
+  .text-3xl-semi {
+    @apply text-[32px] leading-[44px] font-semibold;
+  }
+}

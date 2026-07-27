@@ -1,0 +1,11 @@
+{
+  "exportedAt": "2026-07-27T13:12:21.322Z",
+  "source": "http://localhost:9000",
+  "regionId": "reg_01KWABGZ3WNFVVETZEG9BMXGBX",
+  "counts": {
+    "regions": 1,
+    "products": 207,
+    "categories": 24,
+    "collections": 0
+  }
+}

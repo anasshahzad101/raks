@@ -14,12 +14,51 @@
  * return `undefined` so they fall through to the real (absent) backend and hit
  * their existing `.catch()` paths.
  */
-import categoriesJson from "../content/catalog/categories.json"
-import collectionsJson from "../content/catalog/collections.json"
-import productsJson from "../content/catalog/products.json"
-import regionsJson from "../content/catalog/regions.json"
+import fs from "node:fs"
+import path from "node:path"
 
 type AnyRecord = Record<string, any>
+
+/**
+ * Read the snapshot from disk rather than `import`ing it.
+ *
+ * products.json is ~6.7MB. Importing it statically makes webpack parse it into a
+ * module AST and inline it into every server chunk that touches this file, which
+ * pushed peak `next build` memory past what a managed host allows — the build
+ * was killed with a core dump rather than a usable error. Reading at runtime
+ * keeps the JSON out of the bundle graph entirely.
+ *
+ * cwd is the storefront directory for both `next build` and `next start` (the
+ * root scripts run through `npm --workspace @dtc/storefront`), but the repo-root
+ * candidate is kept so an unexpected cwd fails over instead of failing.
+ */
+function loadSnapshot(file: string): AnyRecord[] {
+  const candidates = [
+    path.join(process.cwd(), "src/content/catalog", file),
+    path.join(process.cwd(), "apps/storefront/src/content/catalog", file),
+  ]
+
+  for (const candidate of candidates) {
+    try {
+      return JSON.parse(fs.readFileSync(candidate, "utf8")) as AnyRecord[]
+    } catch (err: any) {
+      if (err?.code !== "ENOENT") throw err
+    }
+  }
+
+  // Loud on purpose: an empty catalogue renders 404s on every product page and
+  // silently strips them from the sitemap, which is far worse than a hard stop.
+  throw new Error(
+    `Catalog snapshot "${file}" not found. Looked in:\n  ${candidates.join(
+      "\n  "
+    )}\nRegenerate it with \`npm run export:catalog\` (needs the Medusa backend running).`
+  )
+}
+
+const productsJson = loadSnapshot("products.json")
+const categoriesJson = loadSnapshot("categories.json")
+const collectionsJson = loadSnapshot("collections.json")
+const regionsJson = loadSnapshot("regions.json")
 
 const products = productsJson as AnyRecord[]
 const collections = collectionsJson as AnyRecord[]
@@ -131,11 +170,11 @@ function filterProducts(query: AnyRecord): AnyRecord[] {
  * Returns `undefined` for anything this module does not model.
  */
 export function snapshotFetch(
-  path: string,
+  endpoint: string,
   query: AnyRecord = {}
 ): unknown | undefined {
   // Strip any query string and normalise trailing slashes.
-  const pathname = path.split("?")[0].replace(/\/+$/, "")
+  const pathname = endpoint.split("?")[0].replace(/\/+$/, "")
 
   // ---- regions -----------------------------------------------------------
   if (pathname === "/store/regions") {

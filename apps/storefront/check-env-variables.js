@@ -16,7 +16,20 @@ const requiredEnvs = [
   },
 ]
 
+/**
+ * The catalog snapshot serves every catalog read locally, so no key is needed to
+ * build or run the site. Hard-exiting on it in that mode only turns a missing
+ * host env var into an opaque failed deploy (and, because next.config.js is also
+ * loaded by `next start`, into a site that will not boot after a restart).
+ */
+const usingCatalogSnapshot =
+  process.env.NEXT_PUBLIC_USE_CATALOG_SNAPSHOT !== "false"
+
 function checkEnvVariables() {
+  if (usingCatalogSnapshot) {
+    return
+  }
+
   const missingEnvs = requiredEnvs.filter(function (env) {
     return !process.env[env.key]
   })

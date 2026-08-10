@@ -32,6 +32,14 @@ const nextConfig = {
       // old WooCommerce route bases → new equivalents
       { source: "/product-tag/:slug/", destination: "/shop/", permanent: false },
       { source: "/my-account/:path*", destination: "/account", permanent: true },
+      // WordPress media lives at the same relative path under /media/uploads/,
+      // so every image URL Google indexed from the old site is recoverable
+      // instead of 404ing.
+      {
+        source: "/wp-content/uploads/:path*",
+        destination: "/media/uploads/:path*",
+        permanent: true,
+      },
     ]
   },
   logging: {

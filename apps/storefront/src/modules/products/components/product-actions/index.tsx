@@ -1,6 +1,7 @@
 "use client"
 
 import { addToCart } from "@lib/data/cart"
+import { GA_CURRENCY, toGaItem, trackEvent } from "@lib/analytics"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
@@ -127,6 +128,21 @@ export default function ProductActions({
     if (!selectedVariant?.id) return null
 
     setIsAdding(true)
+
+    // Reported before the request so the intent is captured even if the cart
+    // call fails (the storefront currently runs without a backend).
+    const price = (selectedVariant as any)?.calculated_price?.calculated_amount
+    trackEvent("add_to_cart", {
+      currency: GA_CURRENCY,
+      value: (price ?? 0) * quantity,
+      items: [
+        toGaItem(product, {
+          item_variant: selectedVariant.title ?? undefined,
+          price,
+          quantity,
+        }),
+      ],
+    })
 
     await addToCart({
       variantId: selectedVariant.id,

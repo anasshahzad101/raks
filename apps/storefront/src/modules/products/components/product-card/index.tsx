@@ -5,6 +5,7 @@ import { useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { getProductPrice } from "@lib/util/get-product-price"
+import { toGaItem, trackEvent } from "@lib/analytics"
 
 /**
  * Editorial product card matching the RAKS reference design: a 3:4 image with
@@ -100,7 +101,12 @@ export default function ProductCard({
     : null
 
   return (
-    <div className="group relative bg-cream-50 transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(.2,.7,.2,1)] hover:-translate-y-1 hover:shadow-[0_20px_44px_-26px_rgba(42,17,23,0.55)]">
+    <div
+      className="group relative bg-cream-50 transition-[transform,box-shadow] duration-500 ease-[cubic-bezier(.2,.7,.2,1)] hover:-translate-y-1 hover:shadow-[0_20px_44px_-26px_rgba(42,17,23,0.55)]"
+      // Captures clicks on any link in the card (image, title, "Add to Bag"),
+      // so GA can attribute the product click back to the list it came from.
+      onClick={() => trackEvent("select_item", { items: [toGaItem(product)] })}
+    >
       {/* Image */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-cream-200">
         {image ? (

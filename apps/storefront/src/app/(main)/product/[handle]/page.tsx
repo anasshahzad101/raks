@@ -7,6 +7,8 @@ import { getRegion } from "@lib/data/regions"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 import { BRAND, absoluteUrl, productUrl } from "@lib/raks"
+import { toGaItem } from "@lib/analytics"
+import { ViewItem } from "@modules/analytics/ecommerce-events"
 
 type Props = {
   params: Promise<{ handle: string }>
@@ -193,6 +195,7 @@ export default async function ProductPage(props: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbLd) }}
       />
+      <ViewItem item={toGaItem(pricedProduct)} />
       <ProductTemplate
         product={pricedProduct}
         region={region}

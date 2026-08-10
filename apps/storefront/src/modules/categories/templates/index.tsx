@@ -2,6 +2,8 @@ import { notFound } from "next/navigation"
 
 import { getRegion } from "@lib/data/regions"
 import { listProductsWithSort } from "@lib/data/products"
+import { toGaItems } from "@lib/analytics"
+import { ViewItemList } from "@modules/analytics/ecommerce-events"
 import { CATEGORY_PRODUCT_FIELDS } from "@lib/util/product-fields"
 import { categoryPath } from "@lib/data/categories"
 import SortDropdown from "@modules/store/components/refinement-list/sort-dropdown"
@@ -67,6 +69,11 @@ export default async function CategoryTemplate({
 
   return (
     <div className="content-container py-8 small:py-12">
+      <ViewItemList
+        items={toGaItems(products)}
+        listId={`category_${category.handle}`}
+        listName={category.name}
+      />
       {/* Breadcrumb */}
       <nav className="mb-6 flex flex-wrap items-center gap-x-2 text-xs tracking-[0.05em] text-ink/55">
         <LocalizedClientLink href="/" className="transition-colors hover:text-accent">

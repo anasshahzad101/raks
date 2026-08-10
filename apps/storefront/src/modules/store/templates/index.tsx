@@ -6,8 +6,11 @@ import { SortOptions } from "@modules/store/components/refinement-list/sort-prod
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 import PaginatedProducts from "./paginated-products"
+import { listProductsWithSort } from "@lib/data/products"
+import { toGaItems } from "@lib/analytics"
+import { ViewItemList } from "@modules/analytics/ecommerce-events"
 
-const StoreTemplate = ({
+const StoreTemplate = async ({
   sortBy,
   page,
   countryCode,
@@ -19,8 +22,26 @@ const StoreTemplate = ({
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "created_at"
 
+  // Tracked here rather than inside PaginatedProducts: that component sits in a
+  // Suspense boundary which never hydrates on this page, so a client component
+  // rendered there never mounts and the event was silently lost. The catalogue
+  // is served from the local snapshot, so repeating the query costs nothing.
+  const {
+    response: { products: trackedProducts },
+  } = await listProductsWithSort({
+    page: pageNumber,
+    queryParams: { limit: 12 },
+    sortBy: sort,
+    countryCode,
+  })
+
   return (
     <div className="content-container py-8 small:py-12" data-testid="category-container">
+      <ViewItemList
+        items={toGaItems(trackedProducts)}
+        listId={`shop_page_${pageNumber}`}
+        listName="Shop"
+      />
       {/* Breadcrumb */}
       <nav className="text-xs tracking-[0.05em] text-ink/55 mb-6">
         <LocalizedClientLink href="/" className="hover:text-accent transition-colors">

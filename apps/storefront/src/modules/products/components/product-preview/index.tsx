@@ -1,4 +1,6 @@
 import { getProductPrice } from "@lib/util/get-product-price"
+import { toGaItem } from "@lib/analytics"
+import { SelectItem } from "@modules/analytics/ecommerce-events"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
@@ -28,6 +30,7 @@ export default async function ProductPreview({
   const category = product.categories?.[0]?.name
 
   return (
+    <SelectItem item={toGaItem(product)}>
     <LocalizedClientLink href={`/product/${product.handle}/`} className="group block">
       <div
         data-testid="product-wrapper"
@@ -83,5 +86,6 @@ export default async function ProductPreview({
         </div>
       </div>
     </LocalizedClientLink>
+    </SelectItem>
   )
 }

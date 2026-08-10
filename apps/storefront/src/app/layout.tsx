@@ -7,6 +7,7 @@ import {
   SEO_DEFAULT_TITLE,
   absoluteUrl,
 } from "@lib/raks"
+import GoogleAnalytics from "@modules/analytics/google-analytics"
 import "styles/globals.css"
 
 const display = Cormorant_Garamond({
@@ -82,6 +83,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationLd) }}
         />
         <main className="relative">{props.children}</main>
+        <GoogleAnalytics />
       </body>
     </html>
   )

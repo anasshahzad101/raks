@@ -13,6 +13,7 @@ import CategoryNav from "@modules/categories/components/category-nav"
 import CategoryBrowser from "@modules/categories/components/category-browser"
 import CategoryInfo from "@modules/categories/components/category-info"
 import { getCategoryFaqs } from "@lib/faqs"
+import { getCollectionsForCategory, landingH1 } from "@lib/landing-pages"
 import { parseCategoryContent } from "@lib/util/category-content"
 import {
   categoryAboutHeading,
@@ -79,6 +80,11 @@ export default async function CategoryTemplate({
   // themselves — the one thing a category page exists to show.
   const itemListLd = categoryItemListLd(category, products, canonical)
 
+  // The /collections/ landing pages that sit under this category. They target
+  // the style and occasion queries a single category page cannot rank for, and
+  // until now nothing on the site linked to them except blog footers.
+  const collections = getCollectionsForCategory(category.handle ?? "")
+
   return (
     <div className="content-container py-8 small:py-12">
       {itemListLd && (
@@ -142,6 +148,34 @@ export default async function CategoryTemplate({
         region={region ?? undefined}
         categoryNav={<CategoryNav activeCategory={category} />}
       />
+
+      {/* Shop by style — internal links to the long-tail landing pages */}
+      {collections.length > 0 && (
+        <section className="mt-16 border-t border-cream-300 pt-12 small:mt-20 small:pt-[52px]">
+          <div className="mb-4 text-[11px] uppercase tracking-[0.24em] text-gold">
+            Shop by style
+          </div>
+          <h2 className="mb-6 font-display text-[28px] font-medium leading-[1.15] text-ink small:text-[34px]">
+            Browse {category.name.toLowerCase()} by style and occasion
+          </h2>
+          <div className="grid grid-cols-2 gap-3 small:grid-cols-4">
+            {collections.map((c) => (
+              <LocalizedClientLink
+                key={c.slug}
+                href={`/collections/${c.slug}/`}
+                className="group flex items-center justify-between gap-2 border border-cream-300 bg-cream-50 px-4 py-3 transition-colors hover:border-ink"
+              >
+                <span className="text-[13px] font-medium leading-tight text-ink">
+                  {landingH1(c)}
+                </span>
+                <span className="shrink-0 text-gold transition-transform group-hover:translate-x-0.5">
+                  →
+                </span>
+              </LocalizedClientLink>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* About the collection + FAQs — two-column, matches the reference */}
       <CategoryInfo

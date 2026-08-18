@@ -78,6 +78,16 @@ export function categoryItemListLd(
   products: HttpTypes.StoreProduct[],
   canonical: string
 ) {
+  return productItemListLd(categoryH1(category), products, canonical)
+}
+
+/** ItemList JSON-LD for any product grid — category pages and the
+ * /collections/ landing pages both render one. */
+export function productItemListLd(
+  name: string,
+  products: HttpTypes.StoreProduct[],
+  canonical: string
+) {
   const items = products
     .filter((p) => p.handle)
     .slice(0, ITEM_LIST_LIMIT)
@@ -97,7 +107,7 @@ export function categoryItemListLd(
   return {
     "@context": "https://schema.org",
     "@type": "ItemList",
-    name: categoryH1(category),
+    name,
     url: canonical,
     numberOfItems: items.length,
     itemListElement: items,

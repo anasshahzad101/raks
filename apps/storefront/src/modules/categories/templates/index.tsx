@@ -14,17 +14,24 @@ import CategoryBrowser from "@modules/categories/components/category-browser"
 import CategoryInfo from "@modules/categories/components/category-info"
 import { getCategoryFaqs } from "@lib/faqs"
 import { parseCategoryContent } from "@lib/util/category-content"
+import {
+  categoryAboutHeading,
+  categoryH1,
+  categoryItemListLd,
+} from "@lib/util/category-seo"
 import { HttpTypes } from "@medusajs/types"
 
 export default async function CategoryTemplate({
   category,
   sortBy,
   countryCode,
+  canonical,
 }: {
   category: HttpTypes.StoreProductCategory
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  canonical: string
 }) {
   const sort = sortBy || "created_at"
 
@@ -67,8 +74,19 @@ export default async function CategoryTemplate({
     countryCode,
   })
 
+  // Tells Google the grid is a product listing. The page already emitted
+  // Breadcrumb, Organization and FAQPage, but nothing describing the products
+  // themselves — the one thing a category page exists to show.
+  const itemListLd = categoryItemListLd(category, products, canonical)
+
   return (
     <div className="content-container py-8 small:py-12">
+      {itemListLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(itemListLd) }}
+        />
+      )}
       <ViewItemList
         items={toGaItems(products)}
         listId={`category_${category.handle}`}
@@ -104,7 +122,7 @@ export default async function CategoryTemplate({
             className="m-0 font-display text-[40px] font-medium leading-none text-ink small:text-[46px]"
             data-testid="category-page-title"
           >
-            {category.name}
+            {categoryH1(category)}
           </h1>
           <p className="mt-2 text-[13px] tracking-[0.04em] text-ink/50">
             {count} {count === 1 ? "product" : "products"}
@@ -127,7 +145,7 @@ export default async function CategoryTemplate({
 
       {/* About the collection + FAQs — two-column, matches the reference */}
       <CategoryInfo
-        heading={`Buy ${category.name} online in Pakistan`}
+        heading={categoryAboutHeading(category)}
         description={aboutBody}
         faqs={faqs}
       />

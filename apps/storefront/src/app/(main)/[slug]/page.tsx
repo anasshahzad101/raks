@@ -9,6 +9,9 @@ import {
 } from "@lib/blog"
 import { BRAND, absoluteUrl, postUrl } from "@lib/raks"
 import { getRelatedCollections } from "@lib/landing-pages"
+import { listCategories, categoryPath } from "@lib/data/categories"
+import { relatedCategoryHandles } from "@lib/util/related-categories"
+import { categoryH1 } from "@lib/util/category-seo"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ArticleBody from "@modules/blog/components/article-body"
 import BlogCollectionsCta from "@modules/blog/components/collections-cta"
@@ -60,6 +63,17 @@ export default async function ContentPage(props: Props) {
 
   // ---- Blog post ----
   if (post) {
+    const topics = `${post.title} ${post.slug} ${post.categories.join(" ")}`
+
+    // Resolved against the live tree so a renamed category drops out of the CTA
+    // instead of shipping a dead internal link.
+    const categoryTree = await listCategories()
+    const byHandle = new Map(categoryTree.map((c) => [c.handle, c]))
+    const relatedCategories = relatedCategoryHandles(topics)
+      .map((handle) => byHandle.get(handle))
+      .filter((c): c is NonNullable<typeof c> => !!c)
+      .map((c) => ({ name: categoryH1(c), href: categoryPath(c) }))
+
     const articleLd = {
       "@context": "https://schema.org",
       "@type": "Article",
@@ -127,9 +141,8 @@ export default async function ContentPage(props: Props) {
         <ArticleBody html={post.content} />
 
         <BlogCollectionsCta
-          collections={getRelatedCollections(
-            `${post.title} ${post.slug} ${post.categories.join(" ")}`
-          )}
+          categories={relatedCategories}
+          collections={getRelatedCollections(topics)}
         />
 
         <div className="content-container max-w-3xl mt-12 text-center">

@@ -2,10 +2,12 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 
 import { getCategoryByHandle, listCategories, categoryPath } from "@lib/data/categories"
+import { listProducts } from "@lib/data/products"
 import { HttpTypes } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { BRAND, absoluteUrl } from "@lib/raks"
+import { isIndexableCategory } from "@lib/util/category-seo"
 
 type Props = {
   params: Promise<{ category: string[] }>
@@ -56,10 +58,27 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       `Shop ${name.toLowerCase()} online in Pakistan at ${BRAND.name} — latest designs and prices, all sizes, Cash on Delivery, free delivery over Rs 3,000 and discreet packaging.`
     const canonical = absoluteUrl(categoryPath(productCategory))
 
+    // Empty categories are kept out of the index (see isIndexableCategory).
+    // Counted rather than hardcoded so the page returns to the index by itself
+    // once products are assigned to it.
+    const {
+      response: { count },
+    } = await listProducts({
+      countryCode: "pk",
+      queryParams: {
+        category_id: [productCategory.id],
+        limit: 1,
+        fields: "handle",
+      } as HttpTypes.FindParams & HttpTypes.StoreProductListParams,
+    })
+
     return {
       title: { absolute: title },
       description,
       alternates: { canonical },
+      ...(isIndexableCategory(count)
+        ? {}
+        : { robots: { index: false, follow: true } }),
       // No explicit `openGraph` here on purpose: defining it (even partially)
       // suppresses the file-convention opengraph-image banner. Next derives
       // og:title/description from the fields above and applies the banner.
@@ -117,6 +136,7 @@ export default async function CategoryPage(props: Props) {
         sortBy={sortBy}
         page={page}
         countryCode="pk"
+        canonical={absoluteUrl(categoryPath(productCategory))}
       />
     </>
   )

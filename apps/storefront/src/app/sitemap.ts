@@ -4,6 +4,7 @@ import { listCategories } from "@lib/data/categories"
 import { getAllPosts, getPageSlugs } from "@lib/blog"
 import { landingPages } from "@lib/landing-pages"
 import { SITE_URL } from "@lib/raks"
+import { isIndexableCategory } from "@lib/util/category-seo"
 
 // Generated at build time: the catalog is fetched from Medusa during `next build`
 // and baked into a static sitemap.xml. This keeps the sitemap complete (products +
@@ -33,13 +34,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })
   }
 
-  // products
+  // products — also tallies products per category, so the category block below
+  // can drop empty ones without a second pass over the catalog.
+  const productsPerCategory = new Map<string, number>()
   try {
     const { response } = await listProducts({
       countryCode: "pk",
-      queryParams: { limit: 1000, fields: "handle,updated_at" } as any,
+      queryParams: { limit: 1000, fields: "handle,updated_at,*categories" } as any,
     })
     for (const p of response.products) {
+      for (const c of (p as any).categories ?? []) {
+        if (c?.id) productsPerCategory.set(c.id, (productsPerCategory.get(c.id) ?? 0) + 1)
+      }
       if (!p.handle) continue
       entries.push({
         url: `${SITE_URL}/product/${p.handle}/`,
@@ -55,6 +61,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const cats = await listCategories()
     const byId = new Map(cats.map((c: any) => [c.id, c]))
     for (const c of cats as any[]) {
+      // Empty categories are noindex on the page itself; listing them here
+      // would ask Google to crawl what it is told not to index.
+      if (!isIndexableCategory(productsPerCategory.get(c.id) ?? 0)) continue
       const slugs: string[] = []
       let cur: any = c
       while (cur) {

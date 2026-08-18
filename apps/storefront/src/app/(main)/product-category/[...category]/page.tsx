@@ -7,7 +7,12 @@ import { HttpTypes } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { BRAND, absoluteUrl } from "@lib/raks"
-import { isIndexableCategory } from "@lib/util/category-seo"
+import {
+  formatFromPrice,
+  categoryTerm,
+  isIndexableCategory,
+  lowestPrice,
+} from "@lib/util/category-seo"
 
 type Props = {
   params: Promise<{ category: string[] }>
@@ -42,35 +47,45 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     const productCategory = await getCategoryByHandle(params.category)
     if (!productCategory) notFound()
 
-    const name = productCategory.name
+    const term = categoryTerm(productCategory)
     const meta = (productCategory.metadata ?? {}) as Record<string, string>
+    const canonical = absoluteUrl(categoryPath(productCategory))
+
+    // One fetch serves three purposes: the index decision for empty categories
+    // (see isIndexableCategory), the style count and the starting price. Counted
+    // rather than hardcoded so a category returns to the index by itself once
+    // products are assigned to it.
+    const {
+      response: { count, products },
+    } = await listProducts({
+      countryCode: "pk",
+      queryParams: {
+        category_id: [productCategory.id],
+        limit: 250,
+        fields: "handle,*variants.calculated_price",
+      } as HttpTypes.FindParams & HttpTypes.StoreProductListParams,
+    })
+    const fromPrice = lowestPrice(products)
+
     // Geo-intent title targeting the three top query patterns for this market:
     // "{X} online pakistan", "buy {X} online pakistan" and "{X} price in
     // pakistan". Prefer a migrated Yoast title when present.
     const title =
       meta.seo_title ||
-      `Buy ${name} Online in Pakistan — Prices & Sizes | ${BRAND.name}`
-    // Fact-packed meta description (price, sizes, COD, free delivery, discreet)
-    // — the facts search + AI answer engines extract, with the "price in
-    // pakistan" phrase folded in.
+      `Buy ${term} Online in Pakistan — Prices & Sizes | ${BRAND.name}`
+
+    // Fact-packed meta description — the facts search and AI answer engines
+    // extract. The real starting price leads, because "{X} price in pakistan"
+    // is one of the largest query patterns in the data and the title has been
+    // promising "Prices" without ever showing one.
+    const priceLead =
+      fromPrice !== null ? ` from ${formatFromPrice(fromPrice)}` : ""
+    const styles = `${count} ${count === 1 ? "style" : "styles"}`
     const description =
       meta.seo_description ||
-      `Shop ${name.toLowerCase()} online in Pakistan at ${BRAND.name} — latest designs and prices, all sizes, Cash on Delivery, free delivery over Rs 3,000 and discreet packaging.`
-    const canonical = absoluteUrl(categoryPath(productCategory))
-
-    // Empty categories are kept out of the index (see isIndexableCategory).
-    // Counted rather than hardcoded so the page returns to the index by itself
-    // once products are assigned to it.
-    const {
-      response: { count },
-    } = await listProducts({
-      countryCode: "pk",
-      queryParams: {
-        category_id: [productCategory.id],
-        limit: 1,
-        fields: "handle",
-      } as HttpTypes.FindParams & HttpTypes.StoreProductListParams,
-    })
+      `Shop ${term.toLowerCase()} online in Pakistan at ${
+        BRAND.name
+      } — ${styles}${priceLead}. All sizes, Cash on Delivery, free delivery over Rs 3,000 and discreet packaging.`
 
     return {
       title: { absolute: title },

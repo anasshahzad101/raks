@@ -19,7 +19,10 @@ import {
   categoryAboutHeading,
   categoryH1,
   categoryItemListLd,
+  formatFromPrice,
+  lowestPrice,
 } from "@lib/util/category-seo"
+import { getCategoryCopy } from "@lib/category-copy"
 import { HttpTypes } from "@medusajs/types"
 
 export default async function CategoryTemplate({
@@ -57,7 +60,13 @@ export default async function CategoryTemplate({
   const { body: aboutBody, faqs: descFaqs } = parseCategoryContent(
     category.description
   )
-  const faqs = descFaqs.length ? descFaqs : getCategoryFaqs(category.name)
+  // Categories the migration left without copy fall back to hand-written text
+  // before the templated shipping FAQs, which carry no topical information.
+  const copy = getCategoryCopy(category.handle)
+  const body = aboutBody || copy?.description
+  const faqs = descFaqs.length
+    ? descFaqs
+    : copy?.faqs ?? getCategoryFaqs(category.name)
 
   // Load the category's products sorted, then filter sizes on the client. The
   // limit must exceed the largest category (nightwear, 123) or the header count
@@ -84,6 +93,8 @@ export default async function CategoryTemplate({
   // the style and occasion queries a single category page cannot rank for, and
   // until now nothing on the site linked to them except blog footers.
   const collections = getCollectionsForCategory(category.handle ?? "")
+
+  const fromPrice = lowestPrice(products)
 
   return (
     <div className="content-container py-8 small:py-12">
@@ -131,7 +142,10 @@ export default async function CategoryTemplate({
             {categoryH1(category)}
           </h1>
           <p className="mt-2 text-[13px] tracking-[0.04em] text-ink/50">
-            {count} {count === 1 ? "product" : "products"}
+            {count} {count === 1 ? "style" : "styles"}
+            {fromPrice !== null && (
+              <> &middot; from {formatFromPrice(fromPrice)}</>
+            )}
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-3">
@@ -180,7 +194,7 @@ export default async function CategoryTemplate({
       {/* About the collection + FAQs — two-column, matches the reference */}
       <CategoryInfo
         heading={categoryAboutHeading(category)}
-        description={aboutBody}
+        description={body}
         faqs={faqs}
       />
     </div>

@@ -37,8 +37,20 @@ const H1_OVERRIDES: Record<string, string> = {
 export function categoryH1(
   category: Pick<HttpTypes.StoreProductCategory, "name" | "handle">
 ): string {
-  const term = H1_OVERRIDES[category.handle ?? ""] ?? category.name ?? ""
+  const term = categoryTerm(category)
   return /pakistan/i.test(term) ? term : `${term} in Pakistan`
+}
+
+/**
+ * The head term shoppers actually search for this category, without the market
+ * suffix — used in the <title> and meta description so both match the query
+ * rather than the internal category name ("Nighty & Night Dress", not
+ * "Nightdress").
+ */
+export function categoryTerm(
+  category: Pick<HttpTypes.StoreProductCategory, "name" | "handle">
+): string {
+  return H1_OVERRIDES[category.handle ?? ""] ?? category.name ?? ""
 }
 
 /**
@@ -48,8 +60,7 @@ export function categoryH1(
 export function categoryAboutHeading(
   category: Pick<HttpTypes.StoreProductCategory, "name" | "handle">
 ): string {
-  const term = H1_OVERRIDES[category.handle ?? ""] ?? category.name ?? ""
-  return `About our ${term.toLowerCase()} collection`
+  return `About our ${categoryTerm(category).toLowerCase()} collection`
 }
 
 /**
@@ -61,6 +72,34 @@ export function categoryAboutHeading(
  */
 export function isIndexableCategory(productCount: number): boolean {
   return productCount > 0
+}
+
+/**
+ * Cheapest advertised price across a product list, in major units.
+ *
+ * "Price in pakistan" is one of the largest query patterns in the data —
+ * "ifg bra price" alone drew 244 impressions, and titles already promised
+ * "Prices & Sizes" without ever showing a number. Surfacing the real starting
+ * price in the heading and meta description answers the query in the SERP.
+ * Returns null when nothing in the category is priced.
+ */
+export function lowestPrice(products: HttpTypes.StoreProduct[]): number | null {
+  let low: number | null = null
+
+  for (const product of products) {
+    for (const variant of product.variants ?? []) {
+      const amount = (variant as any)?.calculated_price?.calculated_amount
+      if (typeof amount !== "number" || amount <= 0) continue
+      if (low === null || amount < low) low = amount
+    }
+  }
+
+  return low
+}
+
+/** "Rs 1,260" — matches the site's PKR formatting without the decimal noise. */
+export function formatFromPrice(amount: number): string {
+  return `Rs ${Math.round(amount).toLocaleString("en-PK")}`
 }
 
 /** Cap on products described in ItemList — enough for the carousel, not so many

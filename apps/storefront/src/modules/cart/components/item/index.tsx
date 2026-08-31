@@ -1,7 +1,7 @@
 "use client"
 
 import { Table, Text, clx } from "@modules/common/components/ui"
-import { updateLineItem } from "@lib/data/cart"
+import { updateLocalCartQuantity } from "@lib/local-cart"
 import { HttpTypes } from "@medusajs/types"
 import CartItemSelect from "@modules/cart/components/cart-item-select"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -28,16 +28,13 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
     setError(null)
     setUpdating(true)
 
-    await updateLineItem({
-      lineId: item.id,
-      quantity,
-    })
-      .catch((err) => {
-        setError(err.message)
-      })
-      .finally(() => {
-        setUpdating(false)
-      })
+    try {
+      updateLocalCartQuantity(item.id, quantity)
+    } catch (err: any) {
+      setError(err?.message ?? "Could not update the quantity.")
+    } finally {
+      setUpdating(false)
+    }
   }
 
   // TODO: Update this to grab the actual max inventory

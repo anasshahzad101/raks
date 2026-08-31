@@ -1,4 +1,6 @@
-import { deleteLineItem } from "@lib/data/cart"
+"use client"
+
+import { removeLocalCartItem } from "@lib/local-cart"
 import { Spinner, Trash } from "@medusajs/icons"
 import { clx } from "@modules/common/components/ui"
 import { useState } from "react"
@@ -14,11 +16,11 @@ const DeleteButton = ({
 }) => {
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = (id: string) => {
     setIsDeleting(true)
-    await deleteLineItem(id).catch((_err) => {
-      setIsDeleting(false)
-    })
+    removeLocalCartItem(id)
+    // The row unmounts as the cart updates; reset in case it does not.
+    setIsDeleting(false)
   }
 
   return (

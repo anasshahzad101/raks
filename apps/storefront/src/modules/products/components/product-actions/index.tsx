@@ -1,13 +1,13 @@
 "use client"
 
-import { addToCart } from "@lib/data/cart"
+import { addLocalCartItem } from "@lib/local-cart"
 import { GA_CURRENCY, toGaItem, trackEvent } from "@lib/analytics"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
-import { useParams, usePathname, useSearchParams } from "next/navigation"
+import { usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
@@ -41,7 +41,6 @@ export default function ProductActions({
   const [isAdding, setIsAdding] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const [favourite, setFavourite] = useState(false)
-  const countryCode = (useParams().countryCode as string) || "pk"
 
   // If there is only 1 variant, preselect the options
   useEffect(() => {
@@ -129,8 +128,7 @@ export default function ProductActions({
 
     setIsAdding(true)
 
-    // Reported before the request so the intent is captured even if the cart
-    // call fails (the storefront currently runs without a backend).
+    // The bag is held in localStorage, not Medusa: see lib/local-cart.ts.
     const price = (selectedVariant as any)?.calculated_price?.calculated_amount
     trackEvent("add_to_cart", {
       currency: GA_CURRENCY,
@@ -144,11 +142,18 @@ export default function ProductActions({
       ],
     })
 
-    await addToCart({
-      variantId: selectedVariant.id,
-      quantity,
-      countryCode,
-    })
+    addLocalCartItem(
+      {
+        variant_id: selectedVariant.id,
+        product_id: product.id,
+        product_handle: product.handle || "",
+        product_title: product.title || "",
+        variant_title: selectedVariant.title || "",
+        thumbnail: selectedVariant.thumbnail || product.thumbnail || null,
+        unit_price: price ?? 0,
+      },
+      quantity
+    )
 
     setIsAdding(false)
   }

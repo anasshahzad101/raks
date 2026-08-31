@@ -1,26 +1,86 @@
 "use client"
 
-import { useActionState } from "react"
-import { HttpTypes } from "@medusajs/types"
-import { placeOrderExpress } from "@lib/data/cart"
-import Input from "@modules/common/components/input"
-import { SubmitButton } from "@modules/checkout/components/submit-button"
+import { useRouter } from "next/navigation"
+import { FormEvent, useState } from "react"
+
+import { saveLastOrder } from "@lib/last-order"
+import { clearLocalCart, readLocalCart } from "@lib/local-cart"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import Input from "@modules/common/components/input"
+import { Button } from "@modules/common/components/ui"
 
 /**
- * One-page Cash-on-Delivery checkout: a single delivery form that places the
- * order in one submit (address + delivery + COD payment all handled server-side
- * by placeOrderExpress). No steps, no account required.
+ * One-page Cash-on-Delivery checkout.
+ *
+ * Posts the bag to `/api/orders`, which rebuilds every line from the catalog
+ * snapshot and emails the order — there is no Medusa backend to place it with.
+ * Only variant ids and quantities are sent: prices are decided server-side, so
+ * nothing here can influence what an order costs.
  */
-const ExpressCheckout = ({
-  cart,
-  customer,
-}: {
-  cart: HttpTypes.StoreCart
-  customer: HttpTypes.StoreCustomer | null
-}) => {
-  const [message, formAction] = useActionState(placeOrderExpress, null)
-  const sa = cart?.shipping_address
+const ExpressCheckout = () => {
+  const router = useRouter()
+  const [error, setError] = useState<string | null>(null)
+  const [submitting, setSubmitting] = useState(false)
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
+
+    const items = readLocalCart()
+    if (!items.length) {
+      setError("Your bag is empty.")
+      return
+    }
+
+    const form = new FormData(event.currentTarget)
+    const field = (name: string) => String(form.get(name) ?? "").trim()
+
+    setSubmitting(true)
+
+    try {
+      // Trailing slash matters: next.config.js sets trailingSlash, so the
+      // bare path answers with a 308 and costs an extra round trip.
+      const response = await fetch("/api/orders/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          customer: {
+            first_name: field("first_name"),
+            last_name: field("last_name"),
+            email: field("email"),
+            phone: field("phone"),
+            address: field("address"),
+            city: field("city"),
+            province: field("province"),
+            postal_code: field("postal_code"),
+            notes: field("notes"),
+          },
+          items: items.map((item) => ({
+            variant_id: item.variant_id,
+            quantity: item.quantity,
+          })),
+        }),
+      })
+
+      const data = await response.json().catch(() => null)
+
+      if (!response.ok) {
+        setError(data?.error ?? "We could not place your order. Please retry.")
+        setSubmitting(false)
+        return
+      }
+
+      // Stash before clearing: the confirmation page reports this to Analytics.
+      saveLastOrder(data)
+      clearLocalCart()
+      router.push("/order/thank-you")
+    } catch {
+      setError(
+        "We could not reach the store. Check your connection and try again."
+      )
+      setSubmitting(false)
+    }
+  }
 
   return (
     <div>
@@ -35,14 +95,13 @@ const ExpressCheckout = ({
         arrives. No account needed.
       </p>
 
-      <form action={formAction} className="flex flex-col gap-4">
+      <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4">
           <Input
             label="First name"
             name="first_name"
             required
             autoComplete="given-name"
-            defaultValue={sa?.first_name || customer?.first_name || ""}
             data-testid="express-first-name"
           />
           <Input
@@ -50,7 +109,6 @@ const ExpressCheckout = ({
             name="last_name"
             required
             autoComplete="family-name"
-            defaultValue={sa?.last_name || customer?.last_name || ""}
           />
         </div>
 
@@ -60,7 +118,6 @@ const ExpressCheckout = ({
           type="tel"
           required
           autoComplete="tel"
-          defaultValue={sa?.phone || customer?.phone || ""}
           data-testid="express-phone"
         />
         <Input
@@ -69,14 +126,12 @@ const ExpressCheckout = ({
           type="email"
           required
           autoComplete="email"
-          defaultValue={cart?.email || customer?.email || ""}
         />
         <Input
           label="Delivery address"
-          name="address_1"
+          name="address"
           required
           autoComplete="street-address"
-          defaultValue={sa?.address_1 || ""}
           data-testid="express-address"
         />
         <div className="grid grid-cols-2 gap-4">
@@ -85,24 +140,31 @@ const ExpressCheckout = ({
             name="city"
             required
             autoComplete="address-level2"
-            defaultValue={sa?.city || ""}
           />
           <Input
             label="Province (optional)"
             name="province"
             autoComplete="address-level1"
-            defaultValue={sa?.province || ""}
           />
         </div>
+        <Input
+          label="Delivery notes (optional)"
+          name="notes"
+          autoComplete="off"
+        />
 
-        <ErrorMessage error={message} data-testid="express-error" />
+        <ErrorMessage error={error} data-testid="express-error" />
 
-        <SubmitButton
+        <Button
+          type="submit"
+          variant="primary"
+          isLoading={submitting}
+          disabled={submitting}
           className="mt-3 h-[56px] w-full tracking-[0.16em]"
           data-testid="place-order-button"
         >
           Place Order · Cash on Delivery
-        </SubmitButton>
+        </Button>
 
         <p className="mt-1 text-center text-[12px] text-ink/50">
           Free delivery over ₨3,000 · Plain, discreet packaging · Easy 15-day

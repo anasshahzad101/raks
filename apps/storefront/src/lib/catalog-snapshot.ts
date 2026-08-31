@@ -276,3 +276,49 @@ export function snapshotFetch(
 
   return undefined
 }
+
+/** A variant resolved from the snapshot, with its authoritative price. */
+export type CatalogVariant = {
+  variant_id: string
+  product_id: string
+  product_handle: string
+  product_title: string
+  variant_title: string
+  variant_sku: string | null
+  thumbnail: string | null
+  unit_price: number
+}
+
+/**
+ * Look up a variant and its price from the snapshot.
+ *
+ * The email order endpoint uses this to rebuild every line from the catalog
+ * rather than trusting what the browser posted: the cart lives in localStorage,
+ * so prices and titles reaching the server are user-editable.
+ *
+ * Returns undefined for an unknown variant, which the caller rejects.
+ */
+export function findCatalogVariant(
+  variantId: string
+): CatalogVariant | undefined {
+  for (const product of products) {
+    for (const variant of (product.variants ?? []) as AnyRecord[]) {
+      if (variant?.id !== variantId) continue
+
+      const amount = variant?.calculated_price?.calculated_amount
+
+      return {
+        variant_id: variant.id,
+        product_id: product.id,
+        product_handle: product.handle ?? "",
+        product_title: product.title ?? "",
+        variant_title: variant.title ?? "",
+        variant_sku: variant.sku ?? null,
+        thumbnail: variant.thumbnail ?? product.thumbnail ?? null,
+        unit_price: typeof amount === "number" ? amount : 0,
+      }
+    }
+  }
+
+  return undefined
+}

@@ -1,43 +1,25 @@
 import { Metadata } from "next"
 
-import { listCartOptions, retrieveCart } from "@lib/data/cart"
-import { retrieveCustomer } from "@lib/data/customer"
 import { SITE_URL } from "@lib/raks"
-import { StoreCartShippingOption } from "@medusajs/types"
-import CartMismatchBanner from "@modules/layout/components/cart-mismatch-banner"
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
-import FreeShippingPriceNudge from "@modules/shipping/components/free-shipping-price-nudge"
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
 }
 
+/**
+ * The cart-mismatch banner and free-shipping nudge used to render here, which
+ * meant every page awaited `retrieveCart()` and `listCartOptions()` against a
+ * Medusa backend that is not deployed — a guaranteed failed round trip on each
+ * request. The bag now lives in the browser (`lib/local-cart.ts`), so nothing
+ * in the layout needs cart data. Both components remain on disk for whenever
+ * the backend comes back.
+ */
 export default async function PageLayout(props: { children: React.ReactNode }) {
-  const customer = await retrieveCustomer()
-  const cart = await retrieveCart()
-  let shippingOptions: StoreCartShippingOption[] = []
-
-  if (cart) {
-    const { shipping_options } = await listCartOptions()
-
-    shippingOptions = shipping_options
-  }
-
   return (
     <>
       <Nav />
-      {customer && cart && (
-        <CartMismatchBanner customer={customer} cart={cart} />
-      )}
-
-      {cart && (
-        <FreeShippingPriceNudge
-          variant="popup"
-          cart={cart}
-          shippingOptions={shippingOptions}
-        />
-      )}
       {props.children}
       <Footer />
     </>

@@ -4,7 +4,6 @@ import { Button, Heading } from "@modules/common/components/ui"
 
 import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
-import DiscountCode from "@modules/checkout/components/discount-code"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { HttpTypes } from "@medusajs/types"
 
@@ -12,19 +11,12 @@ type SummaryProps = {
   cart: HttpTypes.StoreCart
 }
 
-function getCheckoutStep(cart: HttpTypes.StoreCart) {
-  if (!cart?.shipping_address?.address_1 || !cart.email) {
-    return "address"
-  } else if (cart?.shipping_methods?.length === 0) {
-    return "delivery"
-  } else {
-    return "payment"
-  }
-}
-
+/**
+ * Discount codes are gone with the backend — promotions are evaluated by Medusa,
+ * and there is nothing to evaluate them. Checkout is a single page, so the
+ * step query parameter went with it.
+ */
 const Summary = ({ cart }: SummaryProps) => {
-  const step = getCheckoutStep(cart)
-
   return (
     <div className="flex flex-col gap-y-5 border border-cream-300 bg-[#fffdf9] p-7">
       <Heading
@@ -33,17 +25,13 @@ const Summary = ({ cart }: SummaryProps) => {
       >
         Order Summary
       </Heading>
-      <DiscountCode cart={cart} />
       <Divider />
       <CartTotals totals={cart} />
-      <LocalizedClientLink
-        href={"/checkout?step=" + step}
-        data-testid="checkout-button"
-      >
+      <LocalizedClientLink href="/checkout" data-testid="checkout-button">
         <Button className="w-full h-[52px]">Checkout</Button>
       </LocalizedClientLink>
       <p className="text-center text-[11.5px] text-ink/55 tracking-[0.04em]">
-        Cash on delivery · Easypaisa · JazzCash · Card
+        Cash on delivery · Pay when it arrives
       </p>
     </div>
   )

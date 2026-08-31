@@ -221,11 +221,72 @@ function renderHtml(order: OrderPayload): string {
 </body></html>`
 }
 
+/** Environment variables that must be present before a send is attempted. */
+const REQUIRED_VARS = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"] as const
+
+/** Names of the required variables that are missing. Names only, never values. */
+export function missingEmailVars(): string[] {
+  return REQUIRED_VARS.filter((name) => !process.env[name])
+}
+
 /** True when SMTP is configured well enough to attempt a send. */
 export function isOrderEmailConfigured(): boolean {
-  return Boolean(
-    process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS
-  )
+  return missingEmailVars().length === 0
+}
+
+function buildTransport() {
+  const port = Number(process.env.SMTP_PORT || 465)
+
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST,
+    port,
+    // 465 is implicit TLS; 587 upgrades via STARTTLS.
+    secure: port === 465,
+    auth: {
+      user: process.env.SMTP_USER as string,
+      pass: process.env.SMTP_PASS as string,
+    },
+  })
+}
+
+export type EmailCheck = {
+  reachable: boolean
+  reason?: "authentication" | "connection" | "unknown"
+}
+
+/**
+ * Open an SMTP session and authenticate, without sending anything.
+ *
+ * Exists so a misconfigured mailbox can be told apart from missing variables
+ * without placing a test order or reading the host's logs. The provider's raw
+ * error is deliberately not returned — it tends to echo the username back.
+ */
+export async function verifyOrderEmail(): Promise<EmailCheck> {
+  try {
+    await buildTransport().verify()
+    return { reachable: true }
+  } catch (error: any) {
+    const code = String(error?.code ?? "")
+    const response = String(error?.responseCode ?? "")
+
+    // 535/534 are the usual "bad credentials" replies; EAUTH is nodemailer's.
+    const isAuth =
+      code === "EAUTH" || response === "535" || response === "534"
+
+    console.error("[order] SMTP verify failed", code || error?.message)
+
+    return {
+      reachable: false,
+      reason: isAuth
+        ? "authentication"
+        : code === "ECONNECTION" ||
+          code === "ETIMEDOUT" ||
+          code === "ESOCKET" ||
+          code === "EDNS"
+        ? "connection"
+        : "unknown",
+    }
+  }
 }
 
 export async function sendOrderEmail(order: OrderPayload): Promise<void> {
@@ -236,18 +297,7 @@ export async function sendOrderEmail(order: OrderPayload): Promise<void> {
     throw new Error("SMTP is not configured (SMTP_HOST/SMTP_USER/SMTP_PASS)")
   }
 
-  const port = Number(process.env.SMTP_PORT || 465)
-
-  const transport = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port,
-    // 465 is implicit TLS; 587 upgrades via STARTTLS.
-    secure: port === 465,
-    auth: {
-      user: process.env.SMTP_USER as string,
-      pass: process.env.SMTP_PASS as string,
-    },
-  })
+  const transport = buildTransport()
 
   const name = `${order.customer.first_name} ${order.customer.last_name}`
 

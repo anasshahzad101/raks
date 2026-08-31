@@ -5,7 +5,9 @@ import {
   OrderLine,
   OrderPayload,
   isOrderEmailConfigured,
+  missingEmailVars,
   sendOrderEmail,
+  verifyOrderEmail,
 } from "@lib/order-email"
 import { shippingFor } from "@lib/shipping"
 
@@ -78,6 +80,52 @@ function orderReference(): string {
   const suffix = Math.random().toString(36).slice(2, 6).toUpperCase()
 
   return `RKS-${stamp}-${suffix}`
+}
+
+
+/**
+ * Configuration check.
+ *
+ * Answers the one question a failed order cannot: did the SMTP variables
+ * actually reach the running app, and does the mailbox accept them? Reading a
+ * managed host's logs to find that out is awkward, so this reports it directly.
+ *
+ * Returns variable *names* and the SMTP host and port — never a username,
+ * never a password, and never the provider's raw error, which tends to echo
+ * the username back. Rate limited, because it opens a real SMTP session.
+ */
+export async function GET(request: Request) {
+  if (rateLimited("check:" + clientKey(request))) {
+    return NextResponse.json(
+      { error: "Too many checks. Please wait a few minutes." },
+      { status: 429 }
+    )
+  }
+
+  const missing = missingEmailVars()
+
+  if (missing.length) {
+    return NextResponse.json({
+      ordersCanBeEmailed: false,
+      problem: "missing-configuration",
+      missing,
+      hint: "Set these in the host's environment variables, then restart the app.",
+    })
+  }
+
+  const smtp = await verifyOrderEmail()
+
+  return NextResponse.json({
+    ordersCanBeEmailed: smtp.reachable,
+    problem: smtp.reachable ? null : `smtp-${smtp.reason}`,
+    host: process.env.SMTP_HOST ?? null,
+    port: Number(process.env.SMTP_PORT || 465),
+    hint: smtp.reachable
+      ? "SMTP accepted the login. Orders will be emailed."
+      : smtp.reason === "authentication"
+      ? "The mailbox rejected the username or password."
+      : "Could not open an SMTP connection — check the host and port.",
+  })
 }
 
 export async function POST(request: Request) {

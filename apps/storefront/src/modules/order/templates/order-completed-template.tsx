@@ -9,7 +9,7 @@ import OrderDetails from "@modules/order/components/order-details"
 import ShippingDetails from "@modules/order/components/shipping-details"
 import PaymentDetails from "@modules/order/components/payment-details"
 import { Purchase } from "@modules/analytics/ecommerce-events"
-import { GA_CURRENCY, orderToGaItems } from "@lib/analytics"
+import { GA_CURRENCY, lineItemsToGaItems } from "@lib/analytics"
 import { HttpTypes } from "@medusajs/types"
 
 type OrderCompletedTemplateProps = {
@@ -31,7 +31,7 @@ export default async function OrderCompletedTemplate({
       */}
       <Purchase
         transactionId={String(order.display_id ?? order.id)}
-        items={orderToGaItems(order.items ?? [])}
+        items={lineItemsToGaItems(order.items ?? [])}
         value={order.total ?? 0}
         currency={(order.currency_code || GA_CURRENCY).toUpperCase()}
         tax={order.tax_total ?? undefined}

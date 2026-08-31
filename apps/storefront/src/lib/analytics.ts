@@ -117,3 +117,26 @@ export function itemsValue(items: GaItem[]): number {
     0
   )
 }
+
+/**
+ * Map an order's line items to GA4 ecommerce items.
+ *
+ * Order line items carry their own denormalised product fields, so unlike
+ * `toGaItem` this needs no product lookup. `item_id` still resolves to the
+ * handle so a product keeps one identity across the whole funnel — otherwise
+ * GA4 reports `view_item` and `purchase` against two different items.
+ */
+export function orderToGaItems(
+  items: HttpTypes.StoreOrderLineItem[] = []
+): GaItem[] {
+  return items.map((item, i) => ({
+    item_id: item.product_handle || item.product_id || item.variant_sku || "",
+    item_name: item.product_title || item.title || "",
+    item_brand: "Raks",
+    item_category: item.product_collection ?? undefined,
+    item_variant: item.variant_title ?? undefined,
+    price: item.unit_price,
+    quantity: item.quantity,
+    index: i,
+  }))
+}

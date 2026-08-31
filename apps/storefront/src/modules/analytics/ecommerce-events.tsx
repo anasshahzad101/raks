@@ -129,3 +129,54 @@ export function BeginCheckout({ items }: { items: GaItem[] }) {
 
   return null
 }
+
+/**
+ * `purchase` — an order was placed.
+ *
+ * Rendered by the order confirmation page. Deduplicated by order id in
+ * sessionStorage on top of the usual ref guard: the confirmation URL is
+ * stable and survives a reload, a bookmark or a back-navigation, and GA4
+ * would otherwise count the same order as revenue again on every view.
+ */
+export function Purchase({
+  transactionId,
+  items,
+  value,
+  currency,
+  tax,
+  shipping,
+}: {
+  transactionId: string
+  items: GaItem[]
+  value: number
+  currency: string
+  tax?: number
+  shipping?: number
+}) {
+  const sent = useRef(false)
+
+  useEffect(() => {
+    if (sent.current || !transactionId) return
+    sent.current = true
+
+    const key = `ga_purchase_${transactionId}`
+    try {
+      if (window.sessionStorage.getItem(key)) return
+      window.sessionStorage.setItem(key, "1")
+    } catch {
+      // Storage blocked (private mode, cookie settings): the ref guard still
+      // prevents a double-fire within this page view.
+    }
+
+    trackEvent("purchase", {
+      transaction_id: transactionId,
+      currency,
+      value,
+      ...(tax !== undefined ? { tax } : {}),
+      ...(shipping !== undefined ? { shipping } : {}),
+      items,
+    })
+  }, [transactionId, items, value, currency, tax, shipping])
+
+  return null
+}

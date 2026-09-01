@@ -2,6 +2,7 @@
 
 import { addLocalCartItem } from "@lib/local-cart"
 import { GA_CURRENCY, toGaItem, trackEvent } from "@lib/analytics"
+import { metaContentPayload, trackMetaEvent } from "@lib/meta-pixel"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@modules/common/components/ui"
@@ -130,17 +131,25 @@ export default function ProductActions({
 
     // The bag is held in localStorage, not Medusa: see lib/local-cart.ts.
     const price = (selectedVariant as any)?.calculated_price?.calculated_amount
+    const item = toGaItem(product, {
+      item_variant: selectedVariant.title ?? undefined,
+      price,
+      quantity,
+    })
+
     trackEvent("add_to_cart", {
       currency: GA_CURRENCY,
       value: (price ?? 0) * quantity,
-      items: [
-        toGaItem(product, {
-          item_variant: selectedVariant.title ?? undefined,
-          price,
-          quantity,
-        }),
-      ],
+      items: [item],
     })
+
+    trackMetaEvent(
+      "AddToCart",
+      metaContentPayload([item], {
+        content_name: item.item_name,
+        content_category: item.item_category,
+      })
+    )
 
     addLocalCartItem(
       {

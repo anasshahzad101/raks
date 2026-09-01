@@ -8,6 +8,7 @@ import {
   absoluteUrl,
 } from "@lib/raks"
 import GoogleAnalytics from "@modules/analytics/google-analytics"
+import MetaPixel from "@modules/analytics/meta-pixel"
 import "styles/globals.css"
 
 const display = Cormorant_Garamond({
@@ -84,6 +85,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         />
         <main className="relative">{props.children}</main>
         <GoogleAnalytics />
+        <MetaPixel />
       </body>
     </html>
   )

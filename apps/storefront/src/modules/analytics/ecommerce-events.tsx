@@ -6,18 +6,27 @@ import {
   itemsValue,
   trackEvent,
 } from "@lib/analytics"
+import {
+  metaContentPayload,
+  trackMetaCustom,
+  trackMetaEvent,
+} from "@lib/meta-pixel"
 import { useEffect, useRef } from "react"
 
 /**
- * GA4 ecommerce trackers.
+ * Ecommerce trackers — GA4 and the Meta Pixel.
  *
  * Server components compute the item payload (they already have the product
  * data and prices) and render one of these to emit the event on the client.
  * Each view tracker fires once per payload, guarded against React strict-mode
  * double-invocation and re-renders.
+ *
+ * Both destinations are reported from the same guard so they can never
+ * disagree: one add to bag is one `add_to_cart` and one `AddToCart`, off the
+ * same items and the same value.
  */
 
-/** `view_item` — a product detail page was viewed. */
+/** `view_item` / `ViewContent` — a product detail page was viewed. */
 export function ViewItem({ item }: { item: GaItem }) {
   const sent = useRef<string | undefined>(undefined)
 
@@ -30,12 +39,27 @@ export function ViewItem({ item }: { item: GaItem }) {
       value: item.price ?? 0,
       items: [item],
     })
+
+    trackMetaEvent(
+      "ViewContent",
+      metaContentPayload([item], {
+        content_name: item.item_name,
+        content_category: item.item_category,
+      })
+    )
   }, [item])
 
   return null
 }
 
-/** `view_item_list` — a category, collection, search or rail was viewed. */
+/**
+ * `view_item_list` / `ViewCategory` — a category, collection, search or rail
+ * was viewed.
+ *
+ * Meta has no standard event for a listing page, so this is a custom one —
+ * the same name and shape the official Facebook commerce plugins use, which
+ * keeps it usable as a retargeting audience ("viewed Bras, never bought").
+ */
 export function ViewItemList({
   items,
   listId,
@@ -58,6 +82,13 @@ export function ViewItemList({
       item_list_id: listId,
       item_list_name: listName,
       items,
+    })
+
+    trackMetaCustom("ViewCategory", {
+      content_type: "product_group",
+      content_ids: items.map((item) => item.item_id),
+      content_name: listName,
+      content_category: listName,
     })
   }, [items, listId, listName])
 
@@ -94,7 +125,12 @@ export function SelectItem({
   )
 }
 
-/** `view_cart` — the cart page was opened. */
+/**
+ * `view_cart` / `ViewCart` — the cart page was opened.
+ *
+ * Custom on the Meta side (there is no standard cart-view event), and the
+ * highest-intent audience short of checkout: everyone here has a bag.
+ */
 export function ViewCart({ items }: { items: GaItem[] }) {
   const sent = useRef(false)
 
@@ -107,12 +143,14 @@ export function ViewCart({ items }: { items: GaItem[] }) {
       value: itemsValue(items),
       items,
     })
+
+    trackMetaCustom("ViewCart", metaContentPayload(items))
   }, [items])
 
   return null
 }
 
-/** `begin_checkout` — the checkout flow was entered. */
+/** `begin_checkout` / `InitiateCheckout` — the checkout flow was entered. */
 export function BeginCheckout({ items }: { items: GaItem[] }) {
   const sent = useRef(false)
 
@@ -125,18 +163,21 @@ export function BeginCheckout({ items }: { items: GaItem[] }) {
       value: itemsValue(items),
       items,
     })
+
+    trackMetaEvent("InitiateCheckout", metaContentPayload(items))
   }, [items])
 
   return null
 }
 
 /**
- * `purchase` — an order was placed.
+ * `purchase` / `Purchase` — an order was placed. The conversion event.
  *
  * Rendered by the order confirmation page. Deduplicated by order id in
  * sessionStorage on top of the usual ref guard: the confirmation URL is
- * stable and survives a reload, a bookmark or a back-navigation, and GA4
- * would otherwise count the same order as revenue again on every view.
+ * stable and survives a reload, a bookmark or a back-navigation, and GA4 and
+ * Meta would otherwise count the same order as revenue again on every view.
+ * Both reports sit inside that guard, so they always agree.
  */
 export function Purchase({
   transactionId,
@@ -159,7 +200,7 @@ export function Purchase({
     if (sent.current || !transactionId) return
     sent.current = true
 
-    const key = `ga_purchase_${transactionId}`
+    const key = `purchase_reported_${transactionId}`
     try {
       if (window.sessionStorage.getItem(key)) return
       window.sessionStorage.setItem(key, "1")
@@ -176,6 +217,20 @@ export function Purchase({
       ...(shipping !== undefined ? { shipping } : {}),
       items,
     })
+
+    // `value` and `currency` come from the order, not the lines, so they carry
+    // delivery and tax — this is the number Meta optimises and reports ROAS on.
+    // The event id is the order reference, which is what a Conversions API
+    // send would use to deduplicate against this browser event.
+    trackMetaEvent(
+      "Purchase",
+      metaContentPayload(items, {
+        value,
+        currency,
+        order_id: transactionId,
+      }),
+      `purchase-${transactionId}`
+    )
   }, [transactionId, items, value, currency, tax, shipping])
 
   return null

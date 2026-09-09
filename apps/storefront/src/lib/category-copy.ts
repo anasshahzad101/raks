@@ -165,7 +165,7 @@ export const categoryCopy: Record<string, CategoryCopy> = {
     ],
   },
 
-  "nighty-dress-for-girls": {
+  "night-dresses-for-women": {
     faqs: [
       {
         question: "What styles suit younger women best?",

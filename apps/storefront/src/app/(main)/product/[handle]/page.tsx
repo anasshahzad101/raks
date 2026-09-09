@@ -4,6 +4,7 @@ import { listProducts } from "@lib/data/products"
 import { PRODUCT_OPTION_FIELDS } from "@lib/util/product-fields"
 import { toPlainText } from "@lib/util/plain-text"
 import { categoryH1 } from "@lib/util/category-seo"
+import { extractComposition } from "@lib/util/composition"
 import { categoryPath } from "@lib/data/categories"
 import { getRegion } from "@lib/data/regions"
 import ProductTemplate from "@modules/products/templates"
@@ -145,6 +146,9 @@ export default async function ProductPage(props: Props) {
   const colors = optionValues(/^colou?r$/i)
   const sizes = optionValues(/^sizes?$/i)
   const cupSizes = optionValues(/^cup size$/i)
+  // Same source as the visible "Fabric & Care" panel, so the markup and the
+  // page cannot state different materials. Null for products with none stated.
+  const material = extractComposition(pricedProduct.description)
 
   const jsonLd = {
     "@context": "https://schema.org/",
@@ -159,6 +163,7 @@ export default async function ProductPage(props: Props) {
     itemCondition: "https://schema.org/NewCondition",
     ...(colors.length ? { color: colors } : {}),
     ...(sizes.length ? { size: sizes } : {}),
+    ...(material ? { material } : {}),
     ...(cupSizes.length
       ? {
           additionalProperty: cupSizes.map((value) => ({

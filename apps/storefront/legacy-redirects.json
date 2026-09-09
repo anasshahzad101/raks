@@ -28,5 +28,10 @@
     "source": "/how-to-choose-night-dress-for-your-body-type/",
     "destination": "/choose-nightdress-based-on-body-type/",
     "permanent": true
+  },
+  {
+    "source": "/product-category/lingerie/nightwear/nighty-dress-for-girls/",
+    "destination": "/product-category/lingerie/nightwear/night-dresses-for-women/",
+    "permanent": true
   }
 ]

@@ -62,7 +62,17 @@ export const landingPages: LandingPage[] = [
     description:
       "Shop silk nighties and silk night dresses in Pakistan at Raks. Smooth, luxurious satin-silk styles in every size. Cash on Delivery, free delivery over Rs 3,000.",
     intro:
-      "Discover Raks' silk nighty collection — smooth, breathable and beautifully draping pieces designed to feel as good as they look. From everyday silk night dresses to elegant pieces for special evenings, each style brings a touch of luxury to your nightwear. Available in a range of sizes with Cash on Delivery across Pakistan.",
+      "Smooth, fluid nightwear with the drape and sheen of silk — satin and silk-feel styles that slip on cool and hang beautifully. Most nightwear sold as \"silk\" in Pakistan, here and elsewhere, is a satin weave rather than natural silk; the two look and drape alike but wash differently. Where a supplier has given us the exact composition, it is listed in the Fabric & Care panel on that product page. Available in a range of sizes with Cash on Delivery across Pakistan.",
+    body: [
+      {
+        heading: "Is this real silk or satin?",
+        paragraphs: [
+          "Satin is a weave, not a fibre. A satin nighty can be woven from polyester, rayon or silk, and all three give the same glossy face and fluid drape. Natural silk is the fibre itself, and it costs several times more.",
+          "Almost everything sold as a silk nighty in Pakistan at everyday prices is polyester satin. That is not a problem in itself — it drapes well, holds colour and survives washing better than natural silk — but it is worth knowing what you are buying. Check the Fabric & Care panel on each product page, which shows the composition where the supplier stated one.",
+          "The practical difference is care. Polyester satin handles a gentle machine wash. Natural silk needs hand washing in cool water and drying flat away from sun.",
+        ],
+      },
+    ],
   },
   {
     slug: "net-nighty",

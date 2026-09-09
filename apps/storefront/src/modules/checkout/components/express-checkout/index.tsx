@@ -1,7 +1,8 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { FormEvent, useState } from "react"
+import { FormEvent, useEffect, useState } from "react"
+import { readContact } from "@lib/assistant-contact"
 
 import { saveLastOrder } from "@lib/last-order"
 import { clearLocalCart, readLocalCart } from "@lib/local-cart"
@@ -19,6 +20,19 @@ import { Button } from "@modules/common/components/ui"
  */
 const ExpressCheckout = () => {
   const router = useRouter()
+  // Prefill from anything the shopper already told the assistant, so they are
+  // not asked for their name and number twice. Read after mount: the value lives
+  // in localStorage, which the server cannot see.
+  const [prefill, setPrefill] = useState<{ first: string; last: string; phone: string }>({
+    first: "", last: "", phone: "",
+  })
+  useEffect(() => {
+    const c = readContact()
+    if (!c) return
+    const [first, ...rest] = c.name.trim().split(/\s+/)
+    setPrefill({ first: first ?? "", last: rest.join(" "), phone: c.phone })
+  }, [])
+
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
@@ -98,25 +112,31 @@ const ExpressCheckout = () => {
       <form onSubmit={onSubmit} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-4">
           <Input
+            key={`fn-${prefill.first}`}
             label="First name"
             name="first_name"
             required
+            defaultValue={prefill.first}
             autoComplete="given-name"
             data-testid="express-first-name"
           />
           <Input
+            key={`ln-${prefill.last}`}
             label="Last name"
             name="last_name"
             required
+            defaultValue={prefill.last}
             autoComplete="family-name"
           />
         </div>
 
         <Input
+          key={`ph-${prefill.phone}`}
           label="Phone number"
           name="phone"
           type="tel"
           required
+          defaultValue={prefill.phone}
           autoComplete="tel"
           data-testid="express-phone"
         />

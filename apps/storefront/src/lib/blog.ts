@@ -47,6 +47,25 @@ export const getPageBySlug = (slug: string): StaticPage | undefined =>
 export const isContentSlug = (slug: string): boolean =>
   !!getPostBySlug(slug) || !!getPageBySlug(slug)
 
+/**
+ * Migrated WordPress dates are stored as "2026-07-03 10:00:00" — a space where
+ * ISO 8601 wants a T. Schema.org date properties require ISO 8601, so every
+ * `datePublished` and `dateModified` was previously being emitted in a format
+ * consumers are not obliged to parse.
+ */
+export const toIsoDate = (raw?: string | null): string | undefined => {
+  if (!raw) return undefined
+  const s = String(raw).trim()
+  if (!s) return undefined
+  // Only the separator is corrected. Parsing through `Date` and calling
+  // `toISOString()` would reinterpret these naive timestamps as the build
+  // machine's local time and convert to UTC, shifting a 10:00 publish time by
+  // several hours and, for late-evening posts, onto the previous or next day.
+  // The source has no timezone, so none is invented: this stays a local time.
+  const iso = s.replace(" ", "T")
+  return isNaN(new Date(iso).getTime()) ? undefined : iso
+}
+
 export const formatDate = (iso: string): string => {
   if (!iso) return ""
   const d = new Date(iso.replace(" ", "T"))

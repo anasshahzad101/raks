@@ -6,8 +6,9 @@ import {
   getPostSlugs,
   getPageSlugs,
   formatDate,
+  toIsoDate,
 } from "@lib/blog"
-import { BRAND, absoluteUrl, postUrl } from "@lib/raks"
+import { BRAND, absoluteUrl, postUrl, ORG_ID } from "@lib/raks"
 import { getRelatedCollections } from "@lib/landing-pages"
 import { listCategories, categoryPath } from "@lib/data/categories"
 import { relatedCategoryHandles } from "@lib/util/related-categories"
@@ -79,19 +80,30 @@ export default async function ContentPage(props: Props) {
       "@type": "Article",
       headline: post.title,
       image: post.thumbnail ? [absoluteUrl(post.thumbnail)] : [],
-      datePublished: post.date,
-      dateModified: post.modified || post.date,
-      author: { "@type": "Organization", name: BRAND.name },
-      publisher: {
-        "@type": "Organization",
-        name: BRAND.name,
-        logo: { "@type": "ImageObject", url: absoluteUrl(BRAND.logo) },
-      },
+      datePublished: toIsoDate(post.date),
+      dateModified: toIsoDate(post.modified || post.date),
+      // Reference the single Organization node from the root layout rather than
+      // restating it. This page used to emit three separate Organization objects
+      // (root layout, author, publisher), which asks consumers to reconcile three
+      // descriptions of one business.
+      // The author should become a named Person once the owner confirms who
+      // writes the Journal (OWNER-10) — Google prefers a person here.
+      author: { "@id": ORG_ID },
+      publisher: { "@id": ORG_ID },
       mainEntityOfPage: absoluteUrl(postUrl(slug)),
       description: post.seo_desc || post.excerpt,
     }
 
-    const faqLd = post.faqs?.length
+    // 16 of the migrated posts carry their own <script type="application/ld+json">
+    // FAQPage block inside their HTML body. Emitting a second one from the
+    // `faqs` field would describe the same page with two competing FAQ sets;
+    // one post did exactly that. The embedded block wins, because it is the one
+    // whose questions match the visible article text.
+    const hasEmbeddedFaqLd = /<script[^>]*application\/ld\+json/i.test(
+      post.content ?? ""
+    )
+
+    const faqLd = post.faqs?.length && !hasEmbeddedFaqLd
       ? {
           "@context": "https://schema.org",
           "@type": "FAQPage",
@@ -125,7 +137,16 @@ export default async function ContentPage(props: Props) {
             <h1 className="font-display text-4xl sm:text-5xl text-ink leading-tight">
               {post.title}
             </h1>
-            <p className="mt-5 text-sm text-ink/55">{formatDate(post.date)}</p>
+            {/* A visible last-updated date. Answer engines weight recency for
+                commercial and evaluation queries, and a reader deciding whether
+                to trust a price guide wants to know when it was last checked.
+                Only shown when the post genuinely changed after publication. */}
+            <p className="mt-5 text-sm text-ink/55">
+              {formatDate(post.date)}
+              {post.modified && post.modified !== post.date && (
+                <> · Last updated {formatDate(post.modified)}</>
+              )}
+            </p>
           </div>
         </header>
 

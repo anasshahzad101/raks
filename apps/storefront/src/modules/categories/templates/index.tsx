@@ -11,6 +11,7 @@ import { SortOptions } from "@modules/store/components/refinement-list/sort-prod
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CategoryNav from "@modules/categories/components/category-nav"
 import CategoryBrowser from "@modules/categories/components/category-browser"
+import { slimProductForCard, buildSizeLookup } from "@lib/util/slim-product"
 import CategoryInfo from "@modules/categories/components/category-info"
 import { getCategoryFaqs } from "@lib/faqs"
 import { getCollectionsForCategory, landingH1 } from "@lib/landing-pages"
@@ -158,7 +159,8 @@ export default async function CategoryTemplate({
 
       {/* Filter sidebar + product grid */}
       <CategoryBrowser
-        products={products}
+        products={products.map(slimProductForCard)}
+        sizesByProduct={buildSizeLookup(products)}
         region={region ?? undefined}
         categoryNav={<CategoryNav activeCategory={category} />}
       />

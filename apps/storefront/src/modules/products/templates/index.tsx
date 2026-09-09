@@ -4,7 +4,6 @@ import ImageGallery from "@modules/products/components/image-gallery"
 import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductAccordions from "@modules/products/components/product-accordions"
-import ProductReviews from "@modules/products/components/product-reviews"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
@@ -13,6 +12,7 @@ import { HttpTypes } from "@medusajs/types"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { BRAND, POLICY, deliveryWindow } from "@lib/raks"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -32,6 +32,16 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   }
 
   const category = product.categories?.[0]
+
+  // Whether this product can actually be bought. About 28 of the 207 migrated
+  // products never had a price in the source WooCommerce data; they stay
+  // published to preserve their indexed URLs, but the buy button correctly
+  // renders "Out of stock" for them. The reassurance line below used to say
+  // "In stock" on those same pages regardless, so one product page asserted both
+  // at once.
+  const isPurchasable = (product.variants ?? []).some(
+    (v) => ((v as any).calculated_price?.calculated_amount ?? 0) > 0
+  )
 
   return (
     <>
@@ -60,7 +70,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         <div className="flex flex-col gap-y-8 small:flex-row small:items-start small:gap-x-14">
           {/* Gallery */}
           <div className="w-full small:w-[55%]">
-            <ImageGallery images={images} />
+            <ImageGallery images={images} title={product.title ?? undefined} />
           </div>
 
           {/* Purchase panel */}
@@ -80,10 +90,25 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 <ProductActionsWrapper id={product.id} region={region} />
               </Suspense>
 
-              {/* Stock / shipping reassurance */}
+              {/* Stock / shipping reassurance. Delivery timing comes from POLICY
+                  so it cannot drift from the FAQ, llms.txt and agents.md again. */}
               <div className="flex items-center gap-2 text-[12.5px] text-ink/60 border-t border-cream-300 pt-5">
-                <span className="text-[#5a8a5f]">●</span>
-                In stock · ships in 1–2 days · discreet packaging
+                {isPurchasable ? (
+                  <>
+                    <span className="text-[#5a8a5f]">●</span>
+                    Available to order · delivery in {deliveryWindow()} ·{" "}
+                    {POLICY.packaging}
+                  </>
+                ) : (
+                  <>
+                    <span className="text-ink/35">●</span>
+                    Currently unavailable to order online — email{" "}
+                    <a href={`mailto:${BRAND.email}`} className="underline hover:text-accent">
+                      {BRAND.email}
+                    </a>{" "}
+                    to ask about this piece
+                  </>
+                )}
               </div>
 
               {/* Description / Fabric & Care / Shipping accordions */}
@@ -93,9 +118,6 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             </div>
           </div>
         </div>
-
-        {/* Customer reviews (visible content backing the AggregateRating schema) */}
-        <ProductReviews product={product} />
       </div>
 
       <div

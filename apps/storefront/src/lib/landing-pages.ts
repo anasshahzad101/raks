@@ -438,7 +438,7 @@ export const landingPages: LandingPage[] = [
       {
         question: "Can I return it if the fit is wrong?",
         answer:
-          "Yes. Unworn items with the tags intact can be exchanged for a different size or returned for a refund.",
+          "Yes. Unworn items with the tags intact can be exchanged for a different size within 15 days of delivery.",
       },
     ],
   },

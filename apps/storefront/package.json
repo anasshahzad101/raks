@@ -14,7 +14,8 @@
     "start": "next start",
     "lint": "next lint",
     "analyze": "ANALYZE=true next build",
-    "export:catalog": "node --env-file=.env.local scripts/export-catalog.mjs"
+    "export:catalog": "node --env-file=.env.local scripts/export-catalog.mjs",
+    "check:claims": "node scripts/check-claims.mjs"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",

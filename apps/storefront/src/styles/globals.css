@@ -235,3 +235,34 @@ html {
     @apply text-[32px] leading-[44px] font-semibold;
   }
 }
+
+/* Answer-first opening block on Journal posts.
+   Answer engines extract the first sentences after a heading, so the highest
+   commercial-intent posts now lead with a short, direct, dated answer. Styled
+   as a distinct block so a human reader can see it is the summary. */
+.raks-prose .answer-first {
+  border-left: 3px solid #bb8a45;
+  background: #fdf8f0;
+  padding: 1.15rem 1.35rem;
+  margin: 0 0 2rem;
+  border-radius: 0 10px 10px 0;
+}
+.raks-prose .answer-first p {
+  margin: 0;
+  font-size: 1.03rem;
+  line-height: 1.65;
+}
+.raks-prose .answer-first strong {
+  color: #2a1117;
+}
+
+/* Comparison tables in Journal posts. Wide content scrolls inside its own
+   container so the page body never scrolls sideways on a phone. */
+.raks-prose .table-scroll {
+  overflow-x: auto;
+  margin: 1.75rem 0;
+  -webkit-overflow-scrolling: touch;
+}
+.raks-prose .table-scroll table {
+  min-width: 640px;
+}

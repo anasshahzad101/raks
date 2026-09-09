@@ -44,7 +44,7 @@ export default async function Nav() {
       <div className="bg-ink text-[#f3e7d3] text-center text-[11.5px] tracking-[0.16em] uppercase py-[9px] px-4">
         Get extra 20% off &nbsp;·&nbsp; use code{" "}
         <span className="text-gold-light font-semibold">COMBO20</span> &nbsp;·&nbsp;
-        free discreet delivery over ₨3,000
+        free discreet delivery over Rs 3,000
       </div>
 
       <header className="bg-[#fffdf9] border-b border-cream-200">

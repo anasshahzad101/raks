@@ -48,10 +48,13 @@ export default async function RelatedProducts({
 
   return (
     <div className="product-page-constraint">
+      {/* An <h2>, not a <span>: the twelve product titles below are <h3>s, and
+          without a section heading above them they hung off whatever heading
+          happened to precede them in the document. */}
       <div className="flex flex-col items-center text-center mb-16">
-        <span className="text-base-regular text-gray-600 mb-6">
+        <h2 className="text-base-regular text-gray-600 mb-6">
           Related products
-        </span>
+        </h2>
         <p className="text-2xl-regular text-ui-fg-base max-w-lg">
           You might also want to check out these products.
         </p>

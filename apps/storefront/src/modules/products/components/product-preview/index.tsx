@@ -60,6 +60,7 @@ export default async function ProductPreview({
               images={product.images}
               size="full"
               isFeatured={isFeatured}
+              alt={product.title ?? undefined}
             />
           </div>
         </div>

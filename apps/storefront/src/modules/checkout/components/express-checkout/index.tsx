@@ -167,7 +167,7 @@ const ExpressCheckout = () => {
         </Button>
 
         <p className="mt-1 text-center text-[12px] text-ink/50">
-          Free delivery over ₨3,000 · Plain, discreet packaging · Easy 15-day
+          Free delivery over Rs 3,000 · Plain, discreet packaging · Easy 15-day
           exchange
         </p>
       </form>

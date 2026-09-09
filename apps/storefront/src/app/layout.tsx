@@ -6,6 +6,9 @@ import {
   SEO_TITLE_TEMPLATE,
   SEO_DEFAULT_TITLE,
   absoluteUrl,
+  ORG_ID,
+  SAME_AS,
+  BUSINESS_FACTS,
 } from "@lib/raks"
 import GoogleAnalytics from "@modules/analytics/google-analytics"
 import MetaPixel from "@modules/analytics/meta-pixel"
@@ -61,14 +64,53 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
+/**
+ * The single Organization node for the whole site.
+ *
+ * Emitted here and only here. Other routes reference it by `@id` rather than
+ * repeating it, which previously produced three competing Organization objects
+ * on every blog page.
+ *
+ * `telephone` and the city are confirmed against the owner's own Google Business
+ * Profile and Facebook page. Still deliberately absent until the owner confirms
+ * them: the street address, `foundingDate` and `founder`. A guess in any of
+ * those propagates straight into how answer engines describe the business.
+ */
 const organizationLd = {
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": "OnlineStore",
+  "@id": ORG_ID,
   name: BRAND.name,
   url: SITE_URL,
-  logo: absoluteUrl(BRAND.logo),
+  logo: {
+    "@type": "ImageObject",
+    url: absoluteUrl(BRAND.logo),
+  },
+  image: absoluteUrl(BRAND.logo),
   description: BRAND.description,
-  sameAs: [BRAND.instagram, BRAND.facebook].filter(Boolean),
+  email: BRAND.email,
+  telephone: BUSINESS_FACTS.telephone,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: BUSINESS_FACTS.addressLocality,
+    addressCountry: BUSINESS_FACTS.addressCountry,
+  },
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer service",
+    telephone: BUSINESS_FACTS.telephone,
+    email: BRAND.email,
+    areaServed: BUSINESS_FACTS.addressCountry,
+    availableLanguage: ["en", "ur"],
+  },
+  areaServed: {
+    "@type": "Country",
+    name: BUSINESS_FACTS.areaServed,
+  },
+  currenciesAccepted: BUSINESS_FACTS.currency,
+  paymentAccepted: BUSINESS_FACTS.paymentAccepted,
+  knowsAbout: [...BUSINESS_FACTS.knowsAbout],
+  sameAs: SAME_AS,
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {

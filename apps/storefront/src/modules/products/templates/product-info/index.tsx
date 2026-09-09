@@ -1,7 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
 import { Heading } from "@modules/common/components/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { getProductReviews } from "@lib/reviews"
 
 type ProductInfoProps = {
   product: HttpTypes.StoreProduct
@@ -24,8 +23,6 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
     : category
     ? `/product-category/${category.handle}/`
     : undefined
-  const { average, count } = getProductReviews(product)
-  const full = Math.round(average)
 
   return (
     <div id="product-info">
@@ -49,15 +46,6 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         >
           {product.title}
         </Heading>
-        <a href="#reviews" className="group flex items-center gap-2.5">
-          <span className="text-[15px] leading-none tracking-[2px]">
-            <span className="text-gold">{"★".repeat(full)}</span>
-            <span className="text-bronze-200">{"★".repeat(5 - full)}</span>
-          </span>
-          <span className="text-[12.5px] text-ink/55 group-hover:text-accent transition-colors">
-            {average.toFixed(1)} · {count} reviews
-          </span>
-        </a>
       </div>
     </div>
   )

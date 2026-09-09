@@ -128,7 +128,7 @@ export const categoryCopy: Record<string, CategoryCopy> = {
       {
         question: "Can I exchange it if the fit is wrong?",
         answer:
-          "Yes, as long as the item is unworn with the tags intact. You can exchange for a different size or return it for a refund.",
+          "Yes, as long as the item is unworn with the tags intact. You can exchange it for a different size within 15 days of delivery.",
       },
     ],
   },

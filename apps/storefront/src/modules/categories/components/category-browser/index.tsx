@@ -3,19 +3,26 @@
 import { ReactNode, useMemo, useState } from "react"
 import { HttpTypes } from "@medusajs/types"
 import ProductCard from "@modules/products/components/product-card"
-import { getProductSizes, sortSizes } from "@lib/util/product-sizes"
+import { sortSizes } from "@lib/util/product-sizes"
+import type { SizeLookup } from "@lib/util/slim-product"
 
 /**
  * Category page body: a filter sidebar (the server-rendered CATEGORY list slot,
  * plus a SIZE filter) beside the product grid. Size filtering happens instantly
  * on the client over the already-loaded products — no reload.
+ *
+ * Sizes arrive precomputed. Deriving them here meant shipping every product's
+ * full option data into the RSC payload, which is what made this page's HTML
+ * around a megabyte of inlined JSON.
  */
 export default function CategoryBrowser({
   products,
+  sizesByProduct,
   region,
   categoryNav,
 }: {
   products: HttpTypes.StoreProduct[]
+  sizesByProduct: SizeLookup
   region?: HttpTypes.StoreRegion
   categoryNav: ReactNode
 }) {
@@ -23,16 +30,18 @@ export default function CategoryBrowser({
 
   const allSizes = useMemo(() => {
     const set = new Set<string>()
-    products.forEach((p) => getProductSizes(p).forEach((s) => set.add(s)))
-    return sortSizes([...set])
-  }, [products])
+    products.forEach((p) =>
+      (sizesByProduct[p.id] ?? []).forEach((s) => set.add(s))
+    )
+    return sortSizes(Array.from(set))
+  }, [products, sizesByProduct])
 
   const filtered = useMemo(() => {
     if (!selected.length) return products
     return products.filter((p) =>
-      getProductSizes(p).some((s) => selected.includes(s))
+      (sizesByProduct[p.id] ?? []).some((s) => selected.includes(s))
     )
-  }, [products, selected])
+  }, [products, sizesByProduct, selected])
 
   const toggle = (size: string) =>
     setSelected((prev) =>
@@ -48,10 +57,18 @@ export default function CategoryBrowser({
 
         {allSizes.length > 0 && (
           <div className="mt-9">
-            <h2 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink">
+            {/* Filter label, not a heading — see the note in category-nav. */}
+            <p
+              id="size-filter-label"
+              className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink"
+            >
               Size
-            </h2>
-            <div className="flex flex-wrap gap-2">
+            </p>
+            <div
+              role="group"
+              aria-labelledby="size-filter-label"
+              className="flex flex-wrap gap-2"
+            >
               {allSizes.map((size) => {
                 const on = selected.includes(size)
                 return (
@@ -87,6 +104,11 @@ export default function CategoryBrowser({
 
       {/* Product grid */}
       <div className="flex-1">
+        {/* Gives the product titles (h3) a section to nest under, so the outline
+            reads h1 > h2 Products > h3 product, instead of leaving 13 h3s
+            hanging off a filter label. Visually hidden because the grid is
+            self-evident on screen; screen reader and outline users still get it. */}
+        <h2 className="sr-only">Products</h2>
         {filtered.length > 0 ? (
           <ul
             className="grid grid-cols-2 gap-x-6 gap-y-10 small:grid-cols-3"

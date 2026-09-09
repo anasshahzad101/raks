@@ -144,11 +144,55 @@ const STEPS: Record<string, Choice[]> = {
 
 const EMPTY: Filter = { cats: [], occasion: "", fabric: "", max: Infinity }
 
+/**
+ * Fabric words that count as a match for each request.
+ *
+ * "jersey" is deliberately in none of them. Jersey is a knit construction, not
+ * a fibre: the catalogue contains "premium jersey silk" and "soft jersey and
+ * delicate net", neither of which is cotton. Grouping jersey with cotton made
+ * the assistant lead a cotton search with a silk cami set.
+ */
 const FABRIC_GROUP: Record<string, string[]> = {
-  cotton: ["cotton", "jersey", "linen"],
+  cotton: ["cotton", "linen"],
   satin: ["satin", "silk", "chiffon"],
   lace: ["lace", "net", "mesh"],
 }
+
+/** How each fabric request is described back to the shopper. */
+const FABRIC_LABEL: Record<string, string> = {
+  cotton: "cotton or linen",
+  satin: "silk or satin",
+  lace: "lace or net",
+}
+
+/** Does this piece actually match the fabric that was asked for? */
+const fabricHit = (p: Product, fabric: string): boolean =>
+  (FABRIC_GROUP[fabric] ?? [fabric]).some((g) => p.f.includes(g))
+
+/**
+ * What to say when nothing matches the fabric asked for.
+ *
+ * Showing the nearest pieces under a "Found 30" heading would imply they are
+ * cotton when they are not. Only one nightwear piece in the catalogue is tagged
+ * cotton, so this is the common case, not an edge case. Saying it plainly also
+ * makes the gap visible in analytics.
+ */
+const nearestLead = (fabric: string): string =>
+  `I don't have anything in ${FABRIC_LABEL[fabric] ?? fabric} that matches. ` +
+  `Here are the closest pieces — each product page lists what it is made of, so do check before you buy.`
+
+/**
+ * Fabrics named outright in a product title, by the group they belong to.
+ *
+ * Used only to demote. A shopper who asks for cotton should not be led with a
+ * piece whose own title says "Silk", so a title that advertises a different
+ * fabric costs a product the top of the list.
+ */
+const TITLE_FABRIC: [string, RegExp][] = [
+  ["cotton", /\b(cotton|jersey|linen)\b/i],
+  ["satin", /\b(satin|silk|silky)\b/i],
+  ["lace", /\b(lace|net|mesh)\b/i],
+]
 
 const match = (all: Product[], f: Filter): Product[] => {
   const scored = all
@@ -167,13 +211,21 @@ const match = (all: Product[], f: Filter): Product[] => {
         if (f.occasion === "everyday" && (p.o.includes("bridal") || p.o.includes("party"))) score -= 3
       }
       if (f.fabric) {
-        const group = FABRIC_GROUP[f.fabric] ?? [f.fabric]
-        if (group.some((g) => p.f.includes(g))) score += 2
-        // A piece whose own title says "100% Polyester" should not lead a search
-        // for silk, even though satin and silk share a group. The site tells
-        // shoppers to check the composition; the assistant should rank by it.
-        if (f.fabric === "satin" && /100%\s*polyester|polyester satin/i.test(p.t)) {
-          score -= 4
+        if (fabricHit(p, f.fabric)) {
+          score += 2
+          // A piece whose own title says "100% Polyester" should not lead a
+          // search for silk, even though satin and silk share a group. The site
+          // tells shoppers to check the composition; the assistant ranks by it.
+          if (f.fabric === "satin" && /100%\s*polyester|polyester satin/i.test(p.t)) {
+            score -= 4
+          }
+        } else if (
+          // No fabric match, and the title names a different one outright.
+          // Kept inside the else so "Cotton Lace Nighty" is never punished for
+          // saying cotton when the shopper asked for lace — it is both.
+          TITLE_FABRIC.some(([name, re]) => name !== f.fabric && re.test(p.t))
+        ) {
+          score -= 3
         }
       }
       if (f.size) {
@@ -386,7 +438,9 @@ export default function ShoppingAssistant() {
         setStep("no-results")
         return
       }
-      trackResults(found.length, f)
+      const exact = !f.fabric || found.some((p) => fabricHit(p, f.fabric))
+      trackResults(found.length, f, exact)
+      if (!exact) { showProducts(found, nearestLead(f.fabric)); return }
       const bits = [
         intent.color,
         intent.fabric,
@@ -420,8 +474,14 @@ export default function ShoppingAssistant() {
         setStep("no-results")
         return
       }
-      trackResults(found.length, next)
-      showProducts(found, `Here ${found.length === 1 ? "is" : "are"} ${found.length} that fit. Delivery is free over ${freeDeliveryThresholdLabel()}.`)
+      const exact = !next.fabric || found.some((p) => fabricHit(p, next.fabric))
+      trackResults(found.length, next, exact)
+      showProducts(
+        found,
+        exact
+          ? `Here ${found.length === 1 ? "is" : "are"} ${found.length} that fit. Delivery is free over ${freeDeliveryThresholdLabel()}.`
+          : nearestLead(next.fabric)
+      )
       return
     }
     say(PROMPTS[c.next] ?? "")

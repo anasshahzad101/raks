@@ -91,8 +91,17 @@ export const trackMessage = (intent: string, text: string) =>
 export const trackFaq = (topic: string) =>
   trackEvent("assistant_faq", { assistant_topic: topic })
 
-export const trackResults = (count: number, f: Facets) =>
-  trackEvent("assistant_results", { assistant_results: count, ...facetParams(f) })
+/**
+ * `exact` is false when a fabric was asked for and nothing in the catalogue is
+ * made of it, so the assistant offered the nearest pieces instead. Worth
+ * separating: those are near-misses, not satisfied searches.
+ */
+export const trackResults = (count: number, f: Facets, exact = true) =>
+  trackEvent("assistant_results", {
+    assistant_results: count,
+    assistant_fabric_match: exact ? "exact" : "nearest",
+    ...facetParams(f),
+  })
 
 /** No match. The most actionable event here: demand the catalogue cannot meet. */
 export const trackNoResults = (f: Facets) =>

@@ -40,7 +40,15 @@ const CATEGORY_RULES: [RegExp, string[]][] = [
   [/nightgown|long.?night/, ["nightgowns", "nightwear"]],
   [/night.?suit|pyjama|pajama/, ["pyjama", "night-suits-for-ladies"]],
   [/hot.?night|sexy|romantic|honeymoon/, ["sexy-night-dresses", "nightwear"]],
-  [/for.?girls|teenager|teen|beginner/, ["nighty-dress-for-girls", "nightwear"]],
+  // Teen and first-bra content routes to bras only, never to nightwear or
+  // lingerie. Verified live before this change: "Are Padded Bras Good for
+  // Teenagers?" rendered a "Shop the Collection" block linking to a category
+  // that contains transparent lingerie. A teen-audience article must not
+  // recommend adult intimate apparel.
+  [/teenager|teen|beginner|first.?bra|training.?bra/, ["non-padded-bra", "bras"]],
+  // "for girls" is colloquial for young women in Pakistani English, so it stays
+  // on general nightwear rather than the adult-intimate subcategories.
+  [/for.?girls/, ["nightwear", "lingerie"]],
   [/shapewear|shaper|tummy/, ["shapewear"]],
   [/panty|panties|underwear|thong/, ["panties"]],
   [/nighty|nighties|nightdress|night.?dress|nightwear/, ["nightwear", "lingerie"]],

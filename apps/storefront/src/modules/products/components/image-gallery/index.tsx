@@ -9,7 +9,15 @@ import { HttpTypes } from "@medusajs/types"
  * large 3:4 main image. Clicking a thumbnail swaps the main image. Falls back
  * to the brand watermark tile when a product has no images.
  */
-const ImageGallery = ({ images }: { images: HttpTypes.StoreProductImage[] }) => {
+const ImageGallery = ({
+  images,
+  title,
+}: {
+  images: HttpTypes.StoreProductImage[]
+  /** Product name, so each image describes what it shows rather than saying
+      "Product image" on every product in the catalogue. */
+  title?: string
+}) => {
   const list = (images ?? []).filter((i) => i.url)
   const [active, setActive] = useState(0)
   const main = list[active] ?? list[0]
@@ -40,7 +48,7 @@ const ImageGallery = ({ images }: { images: HttpTypes.StoreProductImage[] }) => 
             >
               <Image
                 src={img.url!}
-                alt=""
+                alt={title ? `${title} — view ${i + 1}` : ""}
                 fill
                 sizes="74px"
                 className="object-cover object-center"
@@ -54,7 +62,7 @@ const ImageGallery = ({ images }: { images: HttpTypes.StoreProductImage[] }) => 
         {main?.url ? (
           <Image
             src={main.url}
-            alt="Product image"
+            alt={title ?? "Product image"}
             fill
             priority
             sizes="(max-width: 1024px) 100vw, 620px"

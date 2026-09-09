@@ -53,10 +53,20 @@ export default async function CategoryNav({
 
   return (
     <div>
-      <h2 className="mb-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink">
+      {/* A filter label, not a document section. As an <h2> it sat directly
+          under the page <h1> and every product title nested beneath it, so the
+          heading outline read "Padded Bra in Pakistan > Category > <product>".
+          It keeps its accessible name via aria-labelledby on the list. */}
+      <p
+        id="category-filter-label"
+        className="mb-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink"
+      >
         Category
-      </h2>
-      <ul className="flex flex-col gap-y-[13px]">
+      </p>
+      <ul
+        aria-labelledby="category-filter-label"
+        className="flex flex-col gap-y-[13px]"
+      >
         <li>
           <LocalizedClientLink
             href="/shop/"

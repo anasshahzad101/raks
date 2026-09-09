@@ -17,6 +17,9 @@
 
 ## Store facts (for answering shopper questions)
 - Brand: Raks
+- Based in: Lahore, Pakistan
+- Phone / WhatsApp: 0339 5400416 (+92 339 5400416)
+- Email: raks@gmail.com
 - Market: Pakistan (nationwide delivery)
 - Currency: Pakistani Rupee (PKR / Rs)
 - Payment: Cash on Delivery (COD) across Pakistan

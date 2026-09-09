@@ -4,6 +4,8 @@
  * Perplexity, Gemini, Google AI Overviews) extract these Q&As directly.
  */
 
+import { POLICY, deliveryWindow, freeDeliveryThresholdLabel } from "./raks"
+
 export type Faq = { question: string; answer: string }
 
 /** Store-wide FAQs (shipping, payment, returns, sizing). Used on /faqs. */
@@ -16,7 +18,7 @@ export const storeFaqs: Faq[] = [
   {
     question: "How much does delivery cost and how long does it take?",
     answer:
-      "We deliver nationwide across Pakistan. Delivery is free on orders over Rs 3,000, and orders typically arrive within 3–5 business days.",
+      `We deliver nationwide across Pakistan. Delivery is free on orders over ${freeDeliveryThresholdLabel()}, and orders typically arrive within ${deliveryWindow()}.`,
   },
   {
     question: "Is the packaging discreet?",
@@ -24,9 +26,9 @@ export const storeFaqs: Faq[] = [
       "Yes. Every order is shipped in plain, unbranded packaging so your purchase stays completely private.",
   },
   {
-    question: "Can I return or exchange an item?",
+    question: "Can I exchange an item if the size is wrong?",
     answer:
-      "Yes. If the fit isn't right, you can exchange your item for a different size or return it for a refund, as long as it is unworn with the tags intact.",
+      `Yes. You can exchange an item for a different size within ${POLICY.exchangeWindowDays} days of delivery, as long as it is unworn with the tags intact. Intimate apparel may be excluded for hygiene reasons — email us and we will confirm before you send anything back.`,
   },
   {
     question: "How do I choose the right size?",
@@ -36,7 +38,7 @@ export const storeFaqs: Faq[] = [
   {
     question: "Are the products true to size?",
     answer:
-      "Our pieces are designed for true-to-size, comfortable fits. The exact size options are shown on every product page.",
+      "Fit varies by style and fabric, so check the size options and description on each product page. If you are between sizes or unsure, email us with your usual size and we will suggest a fit.",
   },
   {
     question: "What payment methods do you accept?",
@@ -68,11 +70,11 @@ export function getCategoryFaqs(name: string): Faq[] {
     },
     {
       question: `How long does delivery take?`,
-      answer: `We deliver ${lower} nationwide across Pakistan, usually within 3–5 business days. Delivery is free on orders over Rs 3,000.`,
+      answer: `We deliver ${lower} nationwide across Pakistan, usually within ${deliveryWindow()}. Delivery is free on orders over ${freeDeliveryThresholdLabel()}.`,
     },
     {
       question: `Can I exchange ${n} if the size doesn't fit?`,
-      answer: `Yes. If your ${lower} doesn't fit, you can exchange it for a different size or return it for a refund, as long as it is unworn with tags intact.`,
+      answer: `Yes. If your ${lower} doesn't fit, you can exchange it for a different size within ${POLICY.exchangeWindowDays} days, as long as it is unworn with tags intact.`,
     },
     {
       question: `Is the packaging discreet?`,

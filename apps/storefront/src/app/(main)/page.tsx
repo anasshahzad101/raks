@@ -5,7 +5,7 @@ import CategoryShowcase from "@modules/home/components/category-showcase"
 import FeaturedRail from "@modules/home/components/featured-rail"
 import JournalTeasers from "@modules/home/components/journal-teasers"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import { BRAND, SITE_URL, SEO_DEFAULT_TITLE } from "@lib/raks"
+import { BRAND, SITE_URL, SEO_DEFAULT_TITLE, ORG_ID } from "@lib/raks"
 
 export const metadata: Metadata = {
   title: { absolute: SEO_DEFAULT_TITLE },
@@ -13,16 +13,18 @@ export const metadata: Metadata = {
   alternates: { canonical: SITE_URL },
 }
 
+// No SearchAction. It declared `/shop/?q={search_term_string}` as a site search,
+// but `q` is not read anywhere: /shop/?q=bra returns exactly the same products as
+// /shop/. Advertising a sitelinks searchbox that silently ignores the query sends
+// searchers to an unfiltered list. Restore this once real search is implemented.
 const websiteLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": `${SITE_URL}/#website`,
   name: BRAND.name,
   url: SITE_URL,
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${SITE_URL}/shop/?q={search_term_string}`,
-    "query-input": "required name=search_term_string",
-  },
+  inLanguage: "en-PK",
+  publisher: { "@id": ORG_ID },
 }
 
 const OFFERS = [
@@ -48,7 +50,7 @@ const OFFERS = [
   },
   {
     kicker: "Everyday",
-    title: "Comfort basics from ₨990",
+    title: "Comfort basics from Rs 990",
     cta: "Shop basics",
     href: "/shop/",
     bg: "#fffdf9",
@@ -101,13 +103,13 @@ const FEATURES = [
   },
   {
     icon: "✦",
-    title: "Premium fabrics",
-    text: "Soft, breathable and made to be lived in all day.",
+    title: "Fabric listed per product",
+    text: "Every product page lists its own fabric and available sizes.",
   },
   {
     icon: "♥",
-    title: "Loved by thousands",
-    text: "5,000+ women across Pakistan trust RAKS for their fit.",
+    title: "Cash on Delivery",
+    text: "Pay when your order arrives, anywhere in Pakistan.",
   },
 ]
 

@@ -42,6 +42,44 @@ const nextConfig = {
       },
     ]
   },
+  // Baseline security headers. These are trust signals rather than ranking
+  // factors, but the site previously sent none of them beyond the CSP that the
+  // Hostinger CDN injects (`upgrade-insecure-requests`).
+  //
+  // Note: no full Content-Security-Policy here. The app loads Google Analytics
+  // and the Meta Pixel, so a policy tight enough to be worth having needs a
+  // nonce and per-source review, and a wrong one silently breaks analytics.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          // Two years, and only meaningful over HTTPS. Preload is deliberately
+          // omitted: submitting to the preload list is effectively permanent
+          // and should be the owner's decision.
+          {
+            key: "Strict-Transport-Security",
+            value: "max-age=63072000; includeSubDomains",
+          },
+          // Stop browsers guessing a response is a different type than declared.
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          // Clickjacking protection. The store is never framed by design.
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          // Send the origin to other sites but the full path within our own, so
+          // product URLs are not leaked to third parties in the Referer header.
+          {
+            key: "Referrer-Policy",
+            value: "strict-origin-when-cross-origin",
+          },
+          // Hardware APIs this storefront has no reason to use.
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+          },
+        ],
+      },
+    ]
+  },
   logging: {
     fetches: {
       fullUrl: true,

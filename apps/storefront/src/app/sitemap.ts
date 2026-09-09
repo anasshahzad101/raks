@@ -15,20 +15,25 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const entries: MetadataRoute.Sitemap = []
   const now = new Date()
 
-  // static
+  // `lastModified` is deliberately omitted below wherever we do not actually
+  // know when the page changed. It previously defaulted to the build time,
+  // which told crawlers that 59 URLs — every static page, collection and
+  // category — had changed on every single deploy. A sitemap that cries wolf
+  // about freshness is worse than one that stays quiet: crawlers learn to
+  // discount the signal, including on the pages that genuinely did change.
   entries.push(
-    { url: `${SITE_URL}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
-    { url: `${SITE_URL}/shop/`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${SITE_URL}/blogs/`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
-    { url: `${SITE_URL}/faqs/`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
-    { url: `${SITE_URL}/collections/`, lastModified: now, changeFrequency: "weekly", priority: 0.8 }
+    { url: `${SITE_URL}/`, changeFrequency: "daily", priority: 1 },
+    { url: `${SITE_URL}/shop/`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${SITE_URL}/blogs/`, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${SITE_URL}/faqs/`, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${SITE_URL}/collections/`, changeFrequency: "weekly", priority: 0.8 }
   )
 
-  // long-tail collection landing pages
+  // long-tail collection landing pages — hand-authored in code, so their real
+  // change date is the deploy that changed them, which we cannot see from here.
   for (const lp of landingPages) {
     entries.push({
       url: `${SITE_URL}/collections/${lp.slug}/`,
-      lastModified: now,
       changeFrequency: "weekly",
       priority: 0.75,
     })
@@ -70,30 +75,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         if (cur.handle) slugs.unshift(cur.handle)
         cur = cur.parent_category ?? (cur.parent_category_id ? byId.get(cur.parent_category_id) : null)
       }
+      // Medusa tracks when a category last changed, so this one is real.
+      const updated = (c as any).updated_at
       entries.push({
         url: `${SITE_URL}/product-category/${slugs.join("/")}/`,
-        lastModified: now,
+        ...(updated ? { lastModified: new Date(updated) } : {}),
         changeFrequency: "weekly",
         priority: 0.7,
       })
     }
   } catch {}
 
-  // blog posts
+  // blog posts — the only content with a genuine per-item modified date
   for (const post of getAllPosts()) {
+    const modified = post.modified || post.date
     entries.push({
       url: `${SITE_URL}${post.url}`,
-      lastModified: post.modified ? new Date(post.modified.replace(" ", "T")) : now,
+      ...(modified
+        ? { lastModified: new Date(modified.replace(" ", "T")) }
+        : {}),
       changeFrequency: "monthly",
       priority: 0.6,
     })
   }
 
-  // static content pages
+  // static content pages (about, contact, privacy, terms). No change date is
+  // tracked for these, so none is claimed.
   for (const slug of getPageSlugs()) {
     entries.push({
       url: `${SITE_URL}/${slug}/`,
-      lastModified: now,
       changeFrequency: "yearly",
       priority: 0.4,
     })

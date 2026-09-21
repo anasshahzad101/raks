@@ -127,7 +127,8 @@ export const BUSINESS_FACTS = {
  * Delivery, payment and returns promise. One source, because these numbers were
  * previously retyped by hand across pages, category copy, llms.txt and agents.md
  * and had already drifted: the product page promised dispatch in "1–2 days"
- * while everything else said 3 to 5 days delivery.
+ * while everything else said 3 to 5 days delivery. The window became 5 to 7
+ * on 21 September 2026, confirmed by the owner.
  *
  * These reflect what the site already publishes. The exchange window and the
  * delivery window still need owner confirmation (OWNER-06, OWNER-08), so change
@@ -135,14 +136,14 @@ export const BUSINESS_FACTS = {
  */
 export const POLICY = {
   freeDeliveryThreshold: 3000,
-  deliveryDaysMin: 3,
-  deliveryDaysMax: 5,
+  deliveryDaysMin: 5,
+  deliveryDaysMax: 7,
   exchangeWindowDays: 15,
   codAvailable: true,
   packaging: "plain, unbranded packaging",
 } as const
 
-/** "3–5 business days" — the delivery window, written once. */
+/** "5–7 business days" — the delivery window, written once. */
 export const deliveryWindow = () =>
   `${POLICY.deliveryDaysMin}–${POLICY.deliveryDaysMax} business days`
 

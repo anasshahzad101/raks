@@ -18,7 +18,7 @@ Raks is a Pakistan-based online retailer of premium women's intimate apparel: li
 - Body Shaper: `/product-category/lingerie/shapewear/`
 
 ## Key facts for shopper questions
-- **Delivery:** Nationwide across Pakistan; free on orders over Rs 3,000; usually 3–5 business days.
+- **Delivery:** Nationwide across Pakistan; free on orders over Rs 3,000; usually 5–7 business days.
 - **Payment:** Cash on Delivery (COD) supported.
 - **Packaging:** Discreet and unbranded for privacy.
 - **Returns/Exchanges:** Easy returns and size exchanges.

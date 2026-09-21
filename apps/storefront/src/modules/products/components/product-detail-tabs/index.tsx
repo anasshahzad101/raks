@@ -118,7 +118,7 @@ const ShippingPanel = () => {
     {
       icon: <FastDelivery />,
       title: "Fast delivery",
-      body: "Your package will arrive in 3-5 business days at your pick up location or in the comfort of your home.",
+      body: `Your package will arrive in ${deliveryWindow()} at your pick up location or in the comfort of your home.`,
     },
     {
       icon: <Refresh />,

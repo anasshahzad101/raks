@@ -92,7 +92,7 @@ export const categoryCopy: Record<string, CategoryCopy> = {
       {
         question: "How far in advance should I order?",
         answer:
-          "Early enough to exchange if the fit is wrong. Delivery is typically 3–5 business days nationwide, so ordering two to three weeks before the event leaves room for one exchange.",
+          "Early enough to exchange if the fit is wrong. Delivery is typically 5–7 business days nationwide, so ordering two to three weeks before the event leaves room for one exchange.",
       },
     ],
   },

@@ -124,7 +124,13 @@ const RULES = [
     // "PKR 1,234.00" style, or the ₨ glyph. The site formats prices as "Rs 1,234".
     // Requires a digit immediately after the symbol: "under 2000 PKR," is
     // ordinary prose, whereas "PKR 2,000" and "₨2,000" are the wrong format.
-    pattern: /(?:PKR\s*\d[\d,]*(?:\.\d+)?|₨\s*\d[\d,]*)/g,
+    //
+    // The boundaries matter more than they look. Medusa ids are ULIDs, and
+    // `optval_01M321D6P4KHPKR78YM8PDH1PZ` contains the letters PKR followed by
+    // digits, so an unanchored match reported six "currency format" problems in
+    // the catalogue that were one product's option id. Require PKR to start a
+    // word and the digits to end one.
+    pattern: /(?:(?<![A-Za-z0-9_])PKR\s*\d[\d,]*(?:\.\d+)?(?![A-Za-z0-9])|₨\s*\d[\d,]*)/g,
     check: () => true,
     note: "prose may write '2000 PKR'; only a leading PKR or ₨ is flagged",
     expected: () => 'formatted as "Rs 1,234"',

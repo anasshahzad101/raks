@@ -3,6 +3,7 @@ import "server-only"
 import { sdk } from "@lib/config"
 import { CatalogVariant, findCatalogVariant } from "@lib/catalog-snapshot"
 import { getRegion } from "@lib/data/regions"
+import { USE_CATALOG_SNAPSHOT } from "@lib/catalog-mode"
 
 /**
  * Authoritative price lookup for the email order endpoint.
@@ -18,11 +19,9 @@ import { getRegion } from "@lib/data/regions"
  *                   current prices, so a price raised in the admin would still
  *                   sell at the old one.
  *
- * `USE_CATALOG_SNAPSHOT` is read the same way as in `lib/config.ts` — on unless
- * explicitly "false" — so the two cannot disagree about which mode is active.
+ * The mode itself comes from `lib/catalog-mode.ts`, so this and `lib/config.ts`
+ * resolve it from one place and cannot disagree about which is authoritative.
  */
-const USE_CATALOG_SNAPSHOT =
-  process.env.NEXT_PUBLIC_USE_CATALOG_SNAPSHOT !== "false"
 
 type StoreVariantResponse = {
   variant?: {

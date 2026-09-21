@@ -1,6 +1,7 @@
 import { getLocaleHeader } from "@lib/util/get-locale-header"
 import Medusa, { FetchArgs, FetchInput } from "@medusajs/js-sdk"
 import { snapshotFetch } from "@lib/catalog-snapshot"
+import { USE_CATALOG_SNAPSHOT } from "@lib/catalog-mode"
 
 // Defaults to standard port for Medusa server
 let MEDUSA_BACKEND_URL = "http://localhost:9000"
@@ -8,20 +9,6 @@ let MEDUSA_BACKEND_URL = "http://localhost:9000"
 if (process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL) {
   MEDUSA_BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL
 }
-
-/**
- * Serve the catalog from the committed JSON snapshot instead of the Medusa API.
- * Enables building and running the storefront with no backend (see
- * `src/lib/catalog-snapshot.ts`). Cart/customer/checkout still go over HTTP.
- *
- * Defaults to ON: opting in by exact string was too fragile. If the host's BUILD
- * environment lacked the variable, every catalog read silently fell through to
- * an absent backend — products 404'd, rails vanished and the sitemap shrank —
- * because every caller degrades rather than throwing. Set the variable to
- * "false" to go back to a live Medusa backend.
- */
-const USE_CATALOG_SNAPSHOT =
-  process.env.NEXT_PUBLIC_USE_CATALOG_SNAPSHOT !== "false"
 
 export const sdk = new Medusa({
   baseUrl: MEDUSA_BACKEND_URL,

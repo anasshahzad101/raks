@@ -10,6 +10,7 @@ import {
   verifyOrderEmail,
 } from "@lib/order-email"
 import { shippingFor } from "@lib/shipping"
+import { createMedusaOrder } from "@lib/medusa-order"
 
 /**
  * Email order endpoint.
@@ -194,6 +195,9 @@ export async function POST(request: Request) {
   }
 
   const items: OrderLine[] = []
+  // What Medusa needs: ids and quantities. Prices are deliberately not sent —
+  // the backend prices the cart itself, and we check the result against ours.
+  const cartLines: { variant_id: string; quantity: number }[] = []
 
   for (const raw of rawItems) {
     const variantId = text(raw?.variant_id, 100)
@@ -221,6 +225,8 @@ export async function POST(request: Request) {
         { status: 409 }
       )
     }
+
+    cartLines.push({ variant_id: variant.variant_id, quantity })
 
     items.push({
       product_title: variant.product_title,
@@ -253,18 +259,51 @@ export async function POST(request: Request) {
     console.error("[order] SMTP not configured; order not delivered")
   }
 
+  // Medusa first. It is the record the shop actually works from — picking,
+  // shipping, refunds — and the email is a notification about it. Doing it in
+  // this order means a failed email cannot cost us an order that Medusa has
+  // already accepted.
+  //
+  // A failure here never rejects the sale. The order falls back to being an
+  // email, marked so nobody assumes it is in the admin.
+  const recorded = await createMedusaOrder({
+    reference: order.reference,
+    email: customer.email,
+    first_name: customer.first_name,
+    last_name: customer.last_name,
+    phone: customer.phone,
+    address: customer.address,
+    city: customer.city,
+    province: customer.province,
+    postal_code: customer.postal_code,
+    notes: customer.notes,
+    lines: cartLines,
+    expected_subtotal: order.subtotal,
+    expected_shipping: order.shipping,
+  })
+
+  order.medusa = recorded
+
+  if (!recorded.ok) {
+    console.error("[order] not recorded in Medusa:", recorded.reason)
+  }
+
   try {
     await sendOrderEmail(order)
   } catch (error) {
     console.error("[order] send failed", error)
 
-    return NextResponse.json(
-      {
-        error:
-          "We could not submit your order just now. Please call or WhatsApp us and we will place it for you.",
-      },
-      { status: 502 }
-    )
+    // Only a dead end when neither record exists. If Medusa took the order,
+    // the shop has it and a missing notification is not the customer's problem.
+    if (!recorded.ok) {
+      return NextResponse.json(
+        {
+          error:
+            "We could not submit your order just now. Please call or WhatsApp us and we will place it for you.",
+        },
+        { status: 502 }
+      )
+    }
   }
 
   return NextResponse.json({

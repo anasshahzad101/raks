@@ -47,6 +47,16 @@ export type OrderPayload = {
   shipping: number
   total: number
   currency: string
+  /**
+   * What happened when this order was recorded in Medusa.
+   *
+   * Present on every order. When `ok` is false the shop still has to fulfil
+   * this order, but nothing in Medusa knows about it, so the email is the only
+   * record — which is why the failure is shouted rather than logged.
+   */
+  medusa?:
+    | { ok: true; order_id: string; display_id: number | null }
+    | { ok: false; reason: string }
 }
 
 function money(amount: number, currency: string): string {
@@ -89,9 +99,25 @@ function renderText(order: OrderPayload): string {
 
   const postcode = c.postal_code ? " " + c.postal_code : ""
 
+  const medusaLines =
+    order.medusa?.ok === true
+      ? [
+          `Medusa order: ${
+            order.medusa.display_id ? "#" + order.medusa.display_id : order.medusa.order_id
+          }`,
+        ]
+      : order.medusa
+      ? [
+          "",
+          "*** NOT RECORDED IN MEDUSA — ENTER THIS ORDER BY HAND ***",
+          `Reason: ${order.medusa.reason}`,
+        ]
+      : []
+
   return [
     `NEW ORDER — ${order.reference}`,
     `Placed: ${order.placed_at}`,
+    ...medusaLines,
     "",
     "CUSTOMER",
     `  ${c.first_name} ${c.last_name}`,
@@ -170,6 +196,19 @@ function renderHtml(order: OrderPayload): string {
   <p style="margin:0;color:#666;font-size:13px">${escapeHtml(
     order.placed_at
   )} · Cash on delivery</p>
+  ${
+    order.medusa?.ok === true
+      ? `<p style="margin:8px 0 0;color:#666;font-size:13px">Medusa order ${escapeHtml(
+          order.medusa.display_id
+            ? "#" + order.medusa.display_id
+            : order.medusa.order_id
+        )}</p>`
+      : order.medusa
+      ? `<p style="margin:12px 0 0;padding:10px 12px;background:#fdecec;border:1px solid #f5aca6;color:#8a1c12;font-size:13px;line-height:1.5"><strong>Not recorded in Medusa — enter this order by hand.</strong><br>${escapeHtml(
+          order.medusa.reason
+        )}</p>`
+      : ""
+  }
 
   <h2 style="${label}">Customer</h2>
   <p style="margin:0;line-height:1.6">
@@ -305,7 +344,9 @@ export async function sendOrderEmail(order: OrderPayload): Promise<void> {
     from: process.env.ORDER_EMAIL_FROM || process.env.SMTP_USER,
     to: process.env.ORDER_EMAIL_TO || process.env.SMTP_USER,
     replyTo: order.customer.email || undefined,
-    subject: `New order ${order.reference} — ${name} — ${money(
+    subject: `${
+      order.medusa && !order.medusa.ok ? "[NOT IN MEDUSA] " : ""
+    }New order ${order.reference} — ${name} — ${money(
       order.total,
       order.currency
     )}`,

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 
-import { findCatalogVariant } from "@lib/catalog-snapshot"
+import { resolveVariant } from "@lib/resolve-variant"
 import {
   OrderLine,
   OrderPayload,
@@ -14,14 +14,16 @@ import { shippingFor } from "@lib/shipping"
 /**
  * Email order endpoint.
  *
- * Stands in for Medusa's checkout while raks.pk runs without a backend: the
- * cart lives in the browser (see `lib/local-cart.ts`) and an order becomes an
- * email rather than a row in a database.
+ * Stands in for Medusa's checkout: the cart lives in the browser (see
+ * `lib/local-cart.ts`) and an order becomes an email rather than a row in a
+ * database.
  *
  * Because the cart is client-side, nothing the browser posts about a product
  * is trusted. Only variant ids and quantities are read from the request; every
- * title, SKU and price is rebuilt from the catalog snapshot, so a tampered
- * localStorage cannot invent items or set its own prices.
+ * title, SKU and price is rebuilt from the catalogue by
+ * `lib/resolve-variant.ts`, which reads whichever catalogue is authoritative
+ * for this deployment, so a tampered localStorage cannot invent items or set
+ * its own prices.
  */
 
 // nodemailer needs Node APIs, so this route must not run on the edge runtime.
@@ -212,7 +214,7 @@ export async function POST(request: Request) {
     }
 
     // The price the browser sent is ignored entirely; this is the real one.
-    const variant = findCatalogVariant(variantId)
+    const variant = await resolveVariant(variantId)
     if (!variant) {
       return NextResponse.json(
         { error: "An item in your bag is no longer available." },

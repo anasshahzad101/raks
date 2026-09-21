@@ -98,3 +98,30 @@ a debugging cycle once already, including migrations quietly not running.
 
 `import-raks.ts` is the original one-shot import. It only creates, so running it
 again duplicates the entire catalogue. Use `sync:products` instead.
+
+## Couriers (PostEx, Leopards)
+
+The courier is chosen by the shop when the order is fulfilled, not by the
+shopper at checkout.
+
+**To ship an order:** open it in the Medusa admin → *Create Fulfillment* → pick
+**PostEx** or **Leopards Courier** in the shipping option dropdown → add the
+tracking number.
+
+They are set up as shipping options with `enabled_in_store` set to `false`.
+That flag is doing real work:
+
+- The Store API filters on it, so couriers never appear at checkout. This
+  matters because the storefront picks the delivery option by **matching its
+  price**. Extra options at the same price would make that match ambiguous and
+  the chosen one arbitrary.
+- The admin's Create Fulfillment screen filters shipping options by stock
+  location only, so the couriers still show up there.
+
+They are priced 0 because they charge the customer nothing — delivery was
+already paid via the checkout option. Picking a courier is a dispatch decision,
+not a second charge.
+
+**To add another courier:** add it to the `REQUIRED` list in
+`src/scripts/ensure-shipping-options.ts` with `enabledInStore: false`, then
+deploy. Existing options are never modified, so it is safe to re-run.

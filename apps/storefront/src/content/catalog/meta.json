@@ -1,7 +1,7 @@
 {
-  "exportedAt": "2026-07-27T13:12:21.322Z",
-  "source": "http://localhost:9000",
-  "regionId": "reg_01KWABGZ3WNFVVETZEG9BMXGBX",
+  "exportedAt": "2026-09-21T15:31:58.771Z",
+  "source": "https://raks-production.up.railway.app",
+  "regionId": "reg_01M321D4JPB3JBZ0XAFDXV73ZN",
   "counts": {
     "regions": 1,
     "products": 207,

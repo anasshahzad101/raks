@@ -5,7 +5,7 @@
     "buildCommand": "npm run build && cd .medusa/server && npm install --omit=dev --no-audit --no-fund"
   },
   "deploy": {
-    "startCommand": "cd .medusa/server && npx medusa db:migrate && npx medusa start",
+    "startCommand": "cd .medusa/server && npx medusa db:migrate && NODE_OPTIONS=--max-old-space-size=768 npx medusa start",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }

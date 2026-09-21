@@ -679,7 +679,7 @@ export default function ShoppingAssistant() {
 
             <p className="mt-2.5 text-center text-[10.5px] leading-relaxed text-ink/45">
               {contact ? <>Saved for checkout: {contact.name} · {contact.phone}<br /></> : null}
-              <a href={`https://wa.me/923395400416?text=${waMessage}`} onClick={() => trackHandoff("whatsapp")} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-accent">
+              <a href={`https://wa.me/923390007257?text=${waMessage}`} onClick={() => trackHandoff("whatsapp")} target="_blank" rel="noreferrer" className="underline underline-offset-2 hover:text-accent">
                 WhatsApp us
               </a>{" "}
               or email{" "}

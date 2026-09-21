@@ -23,7 +23,7 @@ Raks is a Pakistan-based online retailer of premium women's intimate apparel: li
 - **Packaging:** Discreet and unbranded for privacy.
 - **Returns/Exchanges:** Easy returns and size exchanges.
 - **Sizing:** Bras and nightwear are offered in a range of sizes; size options appear on each product page.
-- **Contact:** Phone/WhatsApp 0339 5400416 (+92 339 5400416), email raks@gmail.com. Based in Lahore, Pakistan.
+- **Contact:** Phone/WhatsApp 0339 0007257 (+92 339 0007257), email raks@gmail.com. Based in Lahore, Pakistan.
 
 ## Usage notes for agents
 - Cite product and category URLs exactly as listed in the sitemap.

@@ -105,7 +105,7 @@ export const BUSINESS_FACTS = {
   paymentAccepted: "Cash on Delivery",
   // Confirmed on four owner-controlled listings: the Google Business Profile,
   // the Facebook page, and the TikTok and Instagram bios. E.164 for schema.
-  telephone: "+92-339-5400416",
+  telephone: "+92-339-0007257",
   // The Facebook page gives the location as Bahria Town, Lahore. The Google
   // Business Profile publishes no street address, which is normal for a
   // delivery business, so only the city is asserted here. A full street address

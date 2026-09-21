@@ -5,7 +5,10 @@
     "buildCommand": "npm run build && mkdir -p .medusa/server/src && cp -r src/data .medusa/server/src/ && cd .medusa/server && npm install --omit=dev --no-audit --no-fund"
   },
   "deploy": {
-    "startCommand": "cd .medusa/server && npx medusa db:migrate && NODE_OPTIONS=--max-old-space-size=768 npx medusa start",
+    "preDeployCommand": [
+      "cd .medusa/server && npx medusa db:migrate && npx medusa exec ./src/scripts/backfill-prices.js && npx medusa exec ./src/scripts/ensure-shipping-options.js && npx medusa exec ./src/scripts/setup-storefront-key.js"
+    ],
+    "startCommand": "cd .medusa/server && NODE_OPTIONS=--max-old-space-size=768 npx medusa start",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }

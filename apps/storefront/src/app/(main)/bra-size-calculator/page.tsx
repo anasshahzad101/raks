@@ -478,26 +478,34 @@ export default async function BraSizeCalculatorPage() {
       </section>
 
       {/* ------------------------------------------------------------- note */}
-      <section className="mt-16 max-w-2xl border-l-2 border-gold pl-5">
-        <h2 className="font-display text-xl text-ink">
+      {/* Plain section, same heading size and left edge as every other one.
+          This used to be a narrow pull quote with a gold left border, which
+          indented its heading past all the others and made the page look like
+          it had lost its grid at the bottom. The two paragraphs run in columns
+          instead, so the full width is used without the line length that a
+          single column at this width would give. */}
+      <section className="mt-16">
+        <h2 className="font-display text-2xl text-ink small:text-3xl">
           How accurate is this calculator?
         </h2>
-        <p className="mt-3 text-[14.5px] leading-relaxed text-ink/70">
-          The maths is exact: the same two measurements always give the same band
-          and cup, and this page, the chart above and the size filters on the
-          shop all run off one calculation. What a tape measure cannot capture is
-          breast shape, or how a particular style is cut — two bras in the same
-          size from different brands will not fit identically.
-        </p>
-        <p className="mt-3 text-[14.5px] leading-relaxed text-ink/70">
-          So treat your result as the size to try first. If the band is right and
-          the cup is not, move a cup letter. If the cup is right and the band is
-          not, move to a sister size. Raks exchanges unworn items with tags on
-          within {POLICY.exchangeWindowDays} days.
-        </p>
+        <div className="mt-5 grid gap-x-12 gap-y-4 small:grid-cols-2">
+          <p className="text-[14.5px] leading-relaxed text-ink/70">
+            The maths is exact: the same two measurements always give the same
+            band and cup, and this page, the chart above and the size filters on
+            the shop all run off one calculation. What a tape measure cannot
+            capture is breast shape, or how a particular style is cut — two bras
+            in the same size from different brands will not fit identically.
+          </p>
+          <p className="text-[14.5px] leading-relaxed text-ink/70">
+            So treat your result as the size to try first. If the band is right
+            and the cup is not, move a cup letter. If the cup is right and the
+            band is not, move to a sister size. Raks exchanges unworn items with
+            tags on within {POLICY.exchangeWindowDays} days.
+          </p>
+        </div>
       </section>
 
-      <FaqSection faqs={FAQS} className="mt-16 max-w-3xl" />
+      <FaqSection faqs={FAQS} className="mt-16" />
 
       {/* Links out to the three older sizing posts.
           They rank for the same family of queries, so leaving this page with no
@@ -506,7 +514,7 @@ export default async function BraSizeCalculatorPage() {
           this calculator — OWNER-26 in the AEO todo has the numbers and the
           decision that needs making. */}
       {relatedPosts.length > 0 && (
-        <section className="mt-16 max-w-3xl">
+        <section className="mt-16">
           <h2 className="font-display text-2xl text-ink">Read more on fit</h2>
           <ul className="mt-5 border-t border-bronze-100">
             {relatedPosts.map((post) => (

@@ -509,13 +509,23 @@ export default function BraSizeCalculator({
 
       {/* ------------------------------------------------------- size grid */}
       <div className="border-t border-cream-300 px-6 py-8 small:px-8">
+        {/* Names what it is AND what it is for. "Every size we stock" alone
+            was clear on the page and invisible in search — it did not contain
+            the phrase anyone types to find a chart like this. */}
         <h2 id="size-grid" className="font-display text-2xl text-ink">
-          Every size we stock
+          Bra size chart — every size we stock
         </h2>
         <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-ink/65">
           Bands down the side, cups across the top. Tap any size to see the bras
-          listed in it. Sister sizes sit diagonally from each other — one band
-          down is one cup up.
+          listed in it.
+        </p>
+        <h3 className="mt-5 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink">
+          Sister sizes
+        </h3>
+        <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-ink/65">
+          Sister sizes sit diagonally from each other on this chart — one band
+          down is one cup up, so 34C, 32D and 36B all hold about the same
+          amount. They are what to try when the cup fits but the band does not.
         </p>
         <div className="mt-6">
           <SizeGrid

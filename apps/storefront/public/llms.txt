@@ -10,6 +10,9 @@
 - [Panties](https://raks.pk/product-category/lingerie/panties/): Briefs, hipsters and panty sets
 - [Body Shaper](https://raks.pk/product-category/lingerie/shapewear/): Shapewear and body shapers
 
+## Tools
+- [Bra Size Calculator](https://raks.pk/bra-size-calculator/): Work out a bra size from an underbust and bust measurement, in inches or centimetres. Returns a band size, a cup size, sister sizes, and the bras Raks stocks in that size. Also carries the bra measurement chart, the sister size chart, and step-by-step measuring instructions. Method: band = underbust in inches rounded to a whole number, plus 4 if even or plus 5 if odd; cup = bust minus band, one inch per letter on the UK ladder (A, B, C, D, DD, E, F, FF, G). Raks stocks bands 32-46 and cups A-G.
+
 ## Information
 - [Sitemap](https://raks.pk/sitemap.xml): Complete machine-readable list of every product, category and article URL
 - [Journal / Blog](https://raks.pk/blogs/): Buying guides and articles on nightwear, lingerie, bra fit and fabrics

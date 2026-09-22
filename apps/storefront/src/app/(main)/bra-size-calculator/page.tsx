@@ -34,6 +34,21 @@ import { getAllPosts } from "@lib/blog"
 const PATH = "/bra-size-calculator/"
 const CANONICAL = absoluteUrl(PATH)
 
+/**
+ * Prerendered at build time, like the product and category pages.
+ *
+ * Without this the route renders on every request, because the catalogue read
+ * reaches `cookies()` through `getAuthHeaders()` and that opts the whole page
+ * into dynamic rendering. Live, that measured a 1.5s TTFB against a static
+ * page's ~0.2s — paid on every visit, by a page whose content only changes when
+ * the catalogue does. `sitemap.ts` reads the catalogue the same way for the same
+ * reason.
+ *
+ * The trade is that the bras and prices shown are the ones from the last build,
+ * which is already true of every product page on this site.
+ */
+export const dynamic = "force-static"
+
 export const metadata: Metadata = {
   title: {
     absolute: `Bra Size Calculator — Find Your Size in Inches or CM | ${BRAND.name}`,
@@ -41,12 +56,43 @@ export const metadata: Metadata = {
   description:
     "Work out your bra size from two measurements. Enter your underbust and bust in inches or cm to get your band and cup size, your sister sizes, and the bras Raks lists in that size.",
   alternates: { canonical: CANONICAL },
+  // `images` is the load-bearing line here. Declaring `openGraph` at all
+  // suppresses the file-convention opengraph-image banner, and this page
+  // shipped with NO og:image for exactly that reason while every other page had
+  // one — a blank card on WhatsApp, Facebook and LinkedIn, invisible in the
+  // markup. The category page carries the same warning; it hit this first and
+  // solved it by omitting `openGraph` entirely.
+  //
+  // Naming the banner explicitly is the better half of that trade: it keeps the
+  // image AND gets a page-specific og:title, which omitting `openGraph` does
+  // not — the root layout sets `openGraph.title` to the site default, so every
+  // page that stays silent inherits "Raks — Lingerie & Nightwear in Pakistan".
+  //
+  // The path carries no trailing slash on purpose: `trailingSlash: true` is on,
+  // and /opengraph-image.jpg/ is a 308.
   openGraph: {
-    title: `Bra Size Calculator | ${BRAND.name}`,
-    description:
-      "Find your band and cup size from your underbust and bust measurements, then see the bras available in it.",
-    url: CANONICAL,
     type: "website",
+    title: "Bra Size Calculator — Find Your Size in Inches or CM",
+    description:
+      "Find your band and cup size from your underbust and bust measurements, then see the bras Raks stocks in that size.",
+    url: CANONICAL,
+    images: [
+      {
+        url: "/opengraph-image.jpg",
+        width: 1600,
+        height: 900,
+        alt: "Raks bra size calculator",
+      },
+    ],
+  },
+  // Same reason: without this the card on X reads as the site's generic brand
+  // blurb rather than the tool being shared.
+  twitter: {
+    card: "summary_large_image",
+    title: "Bra Size Calculator — Find Your Size in Inches or CM",
+    description:
+      "Enter your underbust and bust to get your band and cup size, your sister sizes, and the bras available in it.",
+    images: ["/twitter-image.jpg"],
   },
 }
 
@@ -263,10 +309,10 @@ export default async function BraSizeCalculatorPage() {
         {/* The lead answers the query in the first sentence, so an answer
             engine quoting one line quotes something useful. */}
         <p className="mt-4 text-[15px] leading-relaxed text-ink/70">
-          Find your bra size from two measurements: your underbust and your bust.
-          Enter them in inches or centimetres and this calculator gives you a
-          band size, a cup size, your sister sizes, and the bras Raks actually
-          lists in that size.
+          Find your bra size from two measurements: your underbust and your
+          bust size. Enter them in inches or centimetres and this bra cup size
+          calculator gives you a band size, a cup size, your sister sizes, and
+          the bras Raks actually lists in that size.
         </p>
       </div>
 
@@ -308,12 +354,12 @@ export default async function BraSizeCalculatorPage() {
       {/* ------------------------------------------------------- size chart */}
       <section id="bra-size-chart" className="mt-16 scroll-mt-24">
         <h2 className="font-display text-2xl text-ink small:text-3xl">
-          Bra size chart
+          Bra measurement chart
         </h2>
         <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-ink/70">
-          The same two steps the calculator runs, written out. Your underbust
-          gives the band; the difference between your bust and that band gives
-          the cup.
+          The same two steps the calculator runs, written out, so you can work a
+          size out from a tape measure alone. Your underbust gives the band; the
+          difference between your bust and that band gives the cup.
         </p>
 
         {/* Two steps, two cards, numbered, so the chart reads as the method it

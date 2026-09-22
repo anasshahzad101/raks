@@ -93,6 +93,7 @@ export default async function Footer() {
           <h4 className="text-xs uppercase tracking-[0.18em] text-bronze-300 mb-4">Help</h4>
           <ul className="space-y-2.5 text-sm">
             <li><LocalizedClientLink href="/faqs/" className="hover:text-cream-50 transition-colors">FAQs</LocalizedClientLink></li>
+            <li><LocalizedClientLink href="/bra-size-calculator/" className="hover:text-cream-50 transition-colors">Bra Size Calculator</LocalizedClientLink></li>
             <li><LocalizedClientLink href="/contact-us/" className="hover:text-cream-50 transition-colors">Contact Us</LocalizedClientLink></li>
             <li><LocalizedClientLink href="/account" className="hover:text-cream-50 transition-colors">Track Order</LocalizedClientLink></li>
             <li><LocalizedClientLink href="/terms-condition/" className="hover:text-cream-50 transition-colors">Terms &amp; Conditions</LocalizedClientLink></li>

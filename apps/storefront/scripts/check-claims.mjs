@@ -56,6 +56,7 @@ const FILES = [
   "public/agents.md",
   "src/app/(main)/page.tsx",
   "src/app/(main)/faqs/page.tsx",
+  "src/app/(main)/bra-size-calculator/page.tsx",
   "src/modules/products/templates/index.tsx",
   "src/modules/layout/templates/nav/index.tsx",
   "src/modules/layout/templates/footer/index.tsx",

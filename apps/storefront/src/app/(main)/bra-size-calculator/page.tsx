@@ -7,7 +7,6 @@ import {
   STOCKED_CUPS,
   bandChartRows,
   cupChartRows,
-  sisterSizeRun,
 } from "@lib/util/bra-size"
 import { BRAND, ORG_ID, POLICY, absoluteUrl } from "@lib/raks"
 import BraSizeCalculator from "@modules/sizing/components/bra-size-calculator"
@@ -177,11 +176,6 @@ export default async function BraSizeCalculatorPage() {
   const bandRows = bandChartRows()
   const cupRows = cupChartRows()
 
-  /** Sizes with at least one bra behind them, for the availability table. */
-  const stockedLabels = new Set(
-    Object.values(sizesByProduct).flat()
-  )
-
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
@@ -322,40 +316,63 @@ export default async function BraSizeCalculatorPage() {
           the cup.
         </p>
 
-        <div className="mt-7 grid gap-10 small:grid-cols-2">
-          <div>
-            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink">
-              Band size
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[320px] border-collapse text-[14px]">
+        {/* Two steps, two cards, numbered, so the chart reads as the method it
+            is rather than as two spreadsheets that happen to sit side by side. */}
+        <div className="mt-8 grid gap-6 small:grid-cols-2">
+          {/* ------------------------------------------------- step 1: band */}
+          <div className="border border-cream-300 bg-[#fffdf9]">
+            <div className="flex items-center gap-3 border-b border-cream-200 px-5 py-4">
+              <span
+                aria-hidden="true"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-[12px] text-cream-50"
+              >
+                1
+              </span>
+              <div>
+                <h3 className="text-[15px] font-medium text-ink">
+                  Underbust → band
+                </h3>
+                <p className="text-[12.5px] text-ink/55">
+                  Add 4 inches, round up to even
+                </p>
+              </div>
+            </div>
+            <div className="overflow-x-auto px-5 py-2">
+              <table className="w-full border-collapse text-[14px]">
                 <caption className="sr-only">
                   Underbust measurement in inches and centimetres, and the bra
                   band size it gives
                 </caption>
                 <thead>
-                  <tr className="border-b border-bronze-100 text-left text-[12px] uppercase tracking-[0.12em] text-ink/55">
+                  <tr className="text-left text-[11px] uppercase tracking-[0.12em] text-ink/45">
                     <th scope="col" className="py-2.5 pr-4 font-medium">
-                      Underbust (in)
+                      Inches
                     </th>
                     <th scope="col" className="py-2.5 pr-4 font-medium">
-                      Underbust (cm)
+                      cm
                     </th>
-                    <th scope="col" className="py-2.5 font-medium">
+                    <th scope="col" className="py-2.5 text-right font-medium">
                       Band
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {bandRows.map((row) => (
-                    <tr key={row.band} className="border-b border-bronze-100">
-                      <td className="py-2.5 pr-4 text-ink/75">
+                    <tr
+                      key={row.band}
+                      className="border-t border-cream-200 transition-colors hover:bg-cream-100/60"
+                    >
+                      <td className="py-2.5 pr-4 tabular-nums text-ink/70">
                         {row.underbustIn}
                       </td>
-                      <td className="py-2.5 pr-4 text-ink/75">
+                      <td className="py-2.5 pr-4 tabular-nums text-ink/50">
                         {row.underbustCm}
                       </td>
-                      <td className="py-2.5 font-medium text-ink">{row.band}</td>
+                      <td className="py-2.5 text-right">
+                        <span className="inline-block min-w-[38px] border border-cream-300 px-2 py-1 text-center text-[13px] font-medium text-ink">
+                          {row.band}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -363,125 +380,80 @@ export default async function BraSizeCalculatorPage() {
             </div>
           </div>
 
-          <div>
-            <h3 className="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-ink">
-              Cup size
-            </h3>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[320px] border-collapse text-[14px]">
+          {/* -------------------------------------------------- step 2: cup */}
+          <div className="border border-cream-300 bg-[#fffdf9]">
+            <div className="flex items-center gap-3 border-b border-cream-200 px-5 py-4">
+              <span
+                aria-hidden="true"
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-accent text-[12px] text-cream-50"
+              >
+                2
+              </span>
+              <div>
+                <h3 className="text-[15px] font-medium text-ink">
+                  Bust − band → cup
+                </h3>
+                <p className="text-[12.5px] text-ink/55">
+                  One inch of difference is one cup letter
+                </p>
+              </div>
+            </div>
+            <div className="overflow-x-auto px-5 py-2">
+              <table className="w-full border-collapse text-[14px]">
                 <caption className="sr-only">
                   Difference between bust and band measurement, and the cup size
                   it gives
                 </caption>
                 <thead>
-                  <tr className="border-b border-bronze-100 text-left text-[12px] uppercase tracking-[0.12em] text-ink/55">
+                  <tr className="text-left text-[11px] uppercase tracking-[0.12em] text-ink/45">
                     <th scope="col" className="py-2.5 pr-4 font-medium">
-                      Bust minus band (in)
+                      Inches
                     </th>
                     <th scope="col" className="py-2.5 pr-4 font-medium">
-                      (cm)
+                      cm
                     </th>
-                    <th scope="col" className="py-2.5 font-medium">
+                    <th scope="col" className="py-2.5 text-right font-medium">
                       Cup
                     </th>
                   </tr>
                 </thead>
                 <tbody>
                   {cupRows.map((row) => (
-                    <tr key={row.cup} className="border-b border-bronze-100">
-                      <td className="py-2.5 pr-4 text-ink/75">
+                    <tr
+                      key={row.cup}
+                      className="border-t border-cream-200 transition-colors hover:bg-cream-100/60"
+                    >
+                      <td className="py-2.5 pr-4 tabular-nums text-ink/70">
                         {row.difference}
                       </td>
-                      <td className="py-2.5 pr-4 text-ink/75">
+                      <td className="py-2.5 pr-4 tabular-nums text-ink/50">
                         {row.differenceCm}
                       </td>
-                      <td className="py-2.5 font-medium text-ink">
-                        {row.cup}
-                        {!row.stocked && (
-                          <span className="ml-2 text-[11px] font-normal text-ink/40">
-                            not stocked
-                          </span>
-                        )}
+                      <td className="py-2.5 text-right">
+                        <span
+                          className={`inline-block min-w-[38px] border px-2 py-1 text-center text-[13px] ${
+                            row.stocked
+                              ? "border-cream-300 font-medium text-ink"
+                              : "border-dashed border-cream-300 text-ink/35"
+                          }`}
+                          title={row.stocked ? undefined : "Not stocked at Raks"}
+                        >
+                          {row.cup}
+                        </span>
                       </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className="mt-4 text-[13px] leading-relaxed text-ink/55">
-              One inch of difference is one cup letter, and one inch is{" "}
-              {CM_PER_INCH} cm. Raks lists cups {STOCKED_CUPS.join(", ")} —
-              note that DD sits between D and E, which is the UK ladder these
-              brands are labelled on.
-            </p>
           </div>
         </div>
-      </section>
 
-      {/* ----------------------------------------------------- sister sizes */}
-      <section id="sister-sizes" className="mt-16 scroll-mt-24">
-        <h2 className="font-display text-2xl text-ink small:text-3xl">
-          Sister size chart
-        </h2>
-        <p className="mt-3 max-w-2xl text-[14.5px] leading-relaxed text-ink/70">
-          A sister size is a different band with a cup that holds about the same
-          amount. If the cup is right but the band is not, these are what to try
-          — and they are how to shop when your exact size is not made in the
-          style you want.
-        </p>
-        <div className="mt-7 overflow-x-auto">
-          <table className="w-full min-w-[520px] border-collapse text-[14px]">
-            <caption className="sr-only">
-              Sister sizes for each band and cup Raks lists
-            </caption>
-            <thead>
-              <tr className="border-b border-bronze-100 text-left text-[12px] uppercase tracking-[0.12em] text-ink/55">
-                <th scope="col" className="py-2.5 pr-4 font-medium">
-                  Your size
-                </th>
-                <th scope="col" className="py-2.5 pr-4 font-medium">
-                  Band too loose — try
-                </th>
-                <th scope="col" className="py-2.5 font-medium">
-                  Band too tight — try
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {STOCKED_BANDS.flatMap((band) =>
-                ["B", "C", "D"].map((cup) => {
-                  const run = sisterSizeRun(band, cup, 1)
-                  const down = run.find((s) => s.band < band)
-                  const up = run.find((s) => s.band > band)
-                  const label = `${band}${cup}`
-                  return (
-                    <tr key={label} className="border-b border-bronze-100">
-                      <th
-                        scope="row"
-                        className="py-2.5 pr-4 text-left font-medium text-ink"
-                      >
-                        {label}
-                        {!stockedLabels.has(label) && (
-                          <span className="ml-2 text-[11px] font-normal text-ink/40">
-                            not stocked
-                          </span>
-                        )}
-                      </th>
-                      <td className="py-2.5 pr-4 text-ink/75">
-                        {down?.label ?? "—"}
-                      </td>
-                      <td className="py-2.5 text-ink/75">{up?.label ?? "—"}</td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-        <p className="mt-4 text-[13px] leading-relaxed text-ink/55">
-          Shown for the B, C and D cups Raks stocks most widely. The rule is the
-          same for any cup: one band down means one cup up, one band up means one
-          cup down.
+        <p className="mt-5 max-w-2xl text-[13px] leading-relaxed text-ink/55">
+          One inch is {CM_PER_INCH} cm. Raks lists cups{" "}
+          {STOCKED_CUPS.join(", ")} — DD sits between D and E, which is the UK
+          ladder these brands are labelled on. A dashed cup above is a real size
+          on that ladder that Raks does not carry.
         </p>
       </section>
 

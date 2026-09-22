@@ -44,7 +44,14 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   if (!page) notFound()
 
   const product = await loadProduct(page)
-  const image = product?.thumbnail ? absoluteUrl(product.thumbnail) : undefined
+  // The link preview an ad or a WhatsApp share shows: the campaign's own lead
+  // photo when it has one, the product thumbnail otherwise.
+  const lead =
+    page.colours[0]?.photos?.[0]?.src ??
+    page.colours[0]?.image ??
+    product?.thumbnail ??
+    undefined
+  const image = lead ? absoluteUrl(lead) : undefined
   const url = absoluteUrl(`/offer/${page.slug}/`)
 
   return {
@@ -187,6 +194,7 @@ export default async function CampaignOfferPage(props: Props) {
         variants.find((v) => same(v.colour, c.value))?.image ??
         product.thumbnail ??
         null,
+      photos: c.photos ?? [],
     }))
 
   const sizes = Array.from(new Set(variants.map((v) => v.size).filter(Boolean)))

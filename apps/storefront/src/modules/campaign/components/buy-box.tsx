@@ -7,6 +7,7 @@ import { GA_CURRENCY, GaItem, trackEvent } from "@lib/analytics"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { addLocalCartItem, readLocalCart } from "@lib/local-cart"
 import { metaContentPayload, trackMetaEvent } from "@lib/meta-pixel"
+import type { CampaignPhoto } from "@lib/campaigns"
 import { formatPKR } from "@lib/raks"
 import { shippingFor } from "@lib/shipping"
 import { Button, clx } from "@modules/common/components/ui"
@@ -39,6 +40,8 @@ export type CampaignColourOption = {
   label: string
   note: string
   image: string | null
+  /** Gallery for this colour, lead photo first; empty means "just `image`". */
+  photos: CampaignPhoto[]
 }
 
 /** Fired by the colour gallery further down the page; the buy box listens. */
@@ -86,8 +89,12 @@ export default function BuyBox({
 
   const [colour, setColour] = useState<string>(colours[0]?.value ?? "")
   const [size, setSize] = useState<string | null>(null)
+  const [photoIndex, setPhotoIndex] = useState(0)
   const [hint, setHint] = useState(false)
   const [busy, setBusy] = useState(false)
+
+  // A new colour starts from its own lead photo, not the fifth of the old one.
+  useEffect(() => setPhotoIndex(0), [colour])
 
   const sizeRef = useRef<HTMLDivElement>(null)
   const ctaRef = useRef<HTMLDivElement>(null)
@@ -143,6 +150,13 @@ export default function BuyBox({
   // The colour's own photo first: variants in this catalogue rarely carry one,
   // and the product thumbnail is only right for one of the colours.
   const image = activeColour?.image ?? shown?.image ?? fallbackImage
+
+  const photos: CampaignPhoto[] = activeColour?.photos?.length
+    ? activeColour.photos
+    : image
+    ? [{ src: image, alt: `${productTitle} in ${activeColour?.label ?? colour}` }]
+    : []
+  const photo = photos[Math.min(photoIndex, photos.length - 1)]
 
   const order = () => {
     if (!variant) {
@@ -234,25 +248,78 @@ export default function BuyBox({
   return (
     <section id="buy" className="content-container pb-10 pt-6 small:pb-16 small:pt-12">
       <div className="grid grid-cols-1 gap-8 small:grid-cols-[1.05fr_1fr] small:items-start small:gap-14">
-        {/* Image */}
-        <div className="relative aspect-square w-full overflow-hidden bg-cream-200">
-          {image && (
-            // Plain <img>: next/image is unoptimized on this host and the
-            // hero must not wait on hydration.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={image}
-              alt={`${productTitle} in ${activeColour?.label ?? colour}`}
-              width={493}
-              height={493}
-              fetchPriority="high"
-              className="h-full w-full object-cover"
-            />
-          )}
-          {compareAt && (
-            <span className="absolute left-4 top-4 bg-accent px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-white">
-              Save {savingPct}%
-            </span>
+        {/* Gallery. 4:5 on phones so the price is one thumb-scroll away, a
+            little taller beside the panel on desktop. Model photos are 9:16
+            and crop from the top; the square flat-lay is letterboxed instead
+            so no piece is cut off. */}
+        <div className="flex flex-col gap-3">
+          <div className="relative aspect-[4/5] w-full overflow-hidden bg-cream-200 small:aspect-[3/4]">
+            {photo && (
+              // Plain <img>: next/image is unoptimized on this host and the
+              // hero must not wait on hydration.
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                key={photo.src}
+                src={photo.src}
+                alt={photo.alt}
+                width={768}
+                height={960}
+                fetchPriority={photoIndex === 0 ? "high" : undefined}
+                className={clx(
+                  "h-full w-full",
+                  photo.fit === "contain"
+                    ? "object-contain"
+                    : "object-cover object-top"
+                )}
+              />
+            )}
+            {compareAt && (
+              <span className="absolute left-4 top-4 bg-accent px-3 py-1.5 text-[11px] uppercase tracking-[0.14em] text-white">
+                Save {savingPct}%
+              </span>
+            )}
+          </div>
+          {photos.length > 1 && (
+            <div
+              className="flex gap-2 overflow-x-auto pb-1"
+              role="tablist"
+              aria-label="Photos"
+            >
+              {photos.map((p, i) => {
+                const selected = i === photoIndex
+                return (
+                  <button
+                    key={p.src}
+                    type="button"
+                    role="tab"
+                    aria-selected={selected}
+                    aria-label={p.alt}
+                    onClick={() => setPhotoIndex(i)}
+                    className={clx(
+                      "h-[72px] w-[58px] shrink-0 overflow-hidden border bg-cream-200 transition-colors",
+                      selected
+                        ? "border-accent"
+                        : "border-transparent hover:border-bronze-200"
+                    )}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={p.src}
+                      alt=""
+                      width={58}
+                      height={72}
+                      loading="lazy"
+                      className={clx(
+                        "h-full w-full",
+                        p.fit === "contain"
+                          ? "object-contain"
+                          : "object-cover object-top"
+                      )}
+                    />
+                  </button>
+                )
+              })}
+            </div>
           )}
         </div>
 

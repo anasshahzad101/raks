@@ -20,6 +20,15 @@
 import type { Faq } from "./faqs"
 import { POLICY, deliveryWindow, freeDeliveryThresholdLabel } from "./raks"
 
+export type CampaignPhoto = {
+  /** Site-relative path under /public. */
+  src: string
+  /** What the photo actually shows — read out to screen readers, so no sales copy. */
+  alt: string
+  /** "contain" for a square flat-lay that must not be cropped; default "cover". */
+  fit?: "cover" | "contain"
+}
+
 export type CampaignColour = {
   /** The Medusa option value, matched case-insensitively. */
   value: string
@@ -28,11 +37,17 @@ export type CampaignColour = {
   /** One line under the swatch. */
   note: string
   /**
-   * The photo for this colour, site-relative. The migrated catalogue keeps
-   * one image per colour on the product, not on the variants, so Medusa
-   * cannot say which picture belongs to "Blue"; this can.
+   * The swatch photo for this colour, site-relative. The migrated catalogue
+   * keeps one image per colour on the product, not on the variants, so
+   * Medusa cannot say which picture belongs to "Blue"; this can.
    */
   image?: string
+  /**
+   * The gallery, first photo first. Falls back to `image` alone. Owner-supplied
+   * photos live under /public/media/campaign/{slug}/ so they ship with the
+   * storefront and need no Medusa upload.
+   */
+  photos?: CampaignPhoto[]
 }
 
 export type CampaignPage = {
@@ -136,6 +151,40 @@ export const campaignPages: CampaignPage[] = [
         label: "Maroon",
         note: "The classic bridal red.",
         image: "/media/uploads/2025/02/red-bridal-nightwear.jpg",
+        // Six model photos supplied by the owner on 22 September 2026. They
+        // show the robe, the cami top and the trousers; the flat-lay stays
+        // last so all five pieces are seen, not just claimed.
+        photos: [
+          {
+            src: "/media/campaign/bridal-silk-maroon/front.jpg",
+            alt: "The maroon set worn with the robe tied over the cami top and trousers, seen from the front",
+          },
+          {
+            src: "/media/campaign/bridal-silk-maroon/lace-detail.jpg",
+            alt: "Close-up of the lace neckline on the cami top and the lace cuff of the robe",
+          },
+          {
+            src: "/media/campaign/bridal-silk-maroon/three-quarter.jpg",
+            alt: "The robe, cami top and trousers from the front at an angle, showing the lace on the robe",
+          },
+          {
+            src: "/media/campaign/bridal-silk-maroon/side.jpg",
+            alt: "Side view of the robe and trousers, showing the belt and the lace at the ankle",
+          },
+          {
+            src: "/media/campaign/bridal-silk-maroon/back.jpg",
+            alt: "Back view of the robe and trousers",
+          },
+          {
+            src: "/media/campaign/bridal-silk-maroon/bedroom.jpg",
+            alt: "The maroon set worn in a bedroom, robe tied at the waist",
+          },
+          {
+            src: "/media/uploads/2025/02/red-bridal-nightwear.jpg",
+            alt: "All five pieces laid out: robe, long nightgown, cami top, shorts and trousers",
+            fit: "contain",
+          },
+        ],
       },
     ],
     sizing: {

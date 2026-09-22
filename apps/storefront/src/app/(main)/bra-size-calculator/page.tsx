@@ -1,14 +1,6 @@
 import { Metadata } from "next"
 
-import { listProducts } from "@lib/data/products"
-import { getRegion } from "@lib/data/regions"
-import {
-  categoryPath,
-  getCategoryByHandle,
-  listCategories,
-} from "@lib/data/categories"
-import { CATEGORY_PRODUCT_FIELDS } from "@lib/util/product-fields"
-import { buildSizeLookup, slimProductForCard } from "@lib/util/slim-product"
+import { loadBraSizeCatalog } from "@lib/util/bra-catalog"
 import {
   CM_PER_INCH,
   STOCKED_BANDS,
@@ -166,48 +158,8 @@ const FIT_CHECKS = [
 /* ------------------------------------------------------------------ page */
 
 export default async function BraSizeCalculatorPage() {
-  const region = await getRegion("pk")
-
-  // Bras only, filtered server-side by category.
-  //
-  // Nightwear is also listed in 32-38, but those numbers describe a garment's
-  // bust measurement rather than a bra band, so matching a calculated band
-  // against them would offer a nightdress as a bra in the shopper's size.
-  //
-  // The filter is a category query rather than a fetch-everything-then-filter,
-  // because the latter silently loses bras: asking for the whole catalogue caps
-  // at `limit`, and anything past it never reaches the matcher. That is not a
-  // hypothetical — at limit 200 against 207 products, three bras stocking the
-  // test size were missing from the results with nothing to show it.
-  const categories = await listCategories()
-  const braCategoryIds = categories
-    .filter((c) => /bra/i.test(c.name ?? ""))
-    .map((c) => c.id)
-
-  const { response } = await listProducts({
-    countryCode: "pk",
-    queryParams: {
-      category_id: braCategoryIds,
-      limit: 250,
-      fields: CATEGORY_PRODUCT_FIELDS,
-    } as any,
-  })
-
-  const braProducts = response.products
-
-  // Computed here, while the option graph is still on the server, and passed
-  // down as a plain lookup — see the note in `slim-product.ts`.
-  const sizesByProduct = buildSizeLookup(braProducts)
-  const slimmed = braProducts
-    .filter((p) => (sizesByProduct[p.id] ?? []).length > 0)
-    .map(slimProductForCard)
-
-  // Resolved rather than hardcoded: if the category is ever renamed this falls
-  // back to the shop instead of shipping a 404 from every "browse all" link.
-  const braCategory = await getCategoryByHandle(["lingerie", "bras"]).catch(
-    () => null
-  )
-  const braCategoryPath = braCategory ? categoryPath(braCategory) : "/shop/"
+  const { products, sizesByProduct, region, braCategoryPath } =
+    await loadBraSizeCatalog()
 
   // Resolved from the blog index rather than hardcoded, so a renamed or removed
   // post drops out of the list instead of becoming a 404 in the footer of the
@@ -325,9 +277,9 @@ export default async function BraSizeCalculatorPage() {
       </div>
 
       <BraSizeCalculator
-        products={slimmed}
+        products={products}
         sizesByProduct={sizesByProduct}
-        region={region ?? undefined}
+        region={region}
         braCategoryPath={braCategoryPath}
       />
 

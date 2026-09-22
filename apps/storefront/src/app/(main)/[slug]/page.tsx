@@ -14,7 +14,11 @@ import { listCategories, categoryPath } from "@lib/data/categories"
 import { relatedCategoryHandles } from "@lib/util/related-categories"
 import { categoryH1 } from "@lib/util/category-seo"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import ArticleBody from "@modules/blog/components/article-body"
+import ArticleBody, {
+  WIDGET_MARKER,
+} from "@modules/blog/components/article-body"
+import BraSizeCalculator from "@modules/sizing/components/bra-size-calculator"
+import { loadBraSizeCatalog } from "@lib/util/bra-catalog"
 import BlogCollectionsCta from "@modules/blog/components/collections-cta"
 
 type Props = { params: Promise<{ slug: string }> }
@@ -65,6 +69,14 @@ export default async function ContentPage(props: Props) {
   // ---- Blog post ----
   if (post) {
     const topics = `${post.title} ${post.slug} ${post.categories.join(" ")}`
+
+    // Only the one post that carries the marker pays for the catalogue query;
+    // every other post renders as before.
+    const calculatorEmbed = post.content.includes(WIDGET_MARKER)
+      ? await loadBraSizeCatalog().then((catalog) => (
+          <BraSizeCalculator {...catalog} />
+        ))
+      : undefined
 
     // Resolved against the live tree so a renamed category drops out of the CTA
     // instead of shipping a dead internal link.
@@ -159,7 +171,7 @@ export default async function ContentPage(props: Props) {
           </div>
         )}
 
-        <ArticleBody html={post.content} />
+        <ArticleBody html={post.content} embed={calculatorEmbed} />
 
         <BlogCollectionsCta
           categories={relatedCategories}

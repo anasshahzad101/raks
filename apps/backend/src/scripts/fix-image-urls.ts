@@ -1,5 +1,5 @@
 import { MedusaContainer } from "@medusajs/framework";
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils";
 import { updateProductsWorkflow } from "@medusajs/medusa/core-flows";
 import { STOREFRONT_URL, toAbsoluteMediaUrl } from "../lib/media-url";
 
@@ -13,6 +13,13 @@ import { STOREFRONT_URL, toAbsoluteMediaUrl } from "../lib/media-url";
  *
  * Run it with:
  *   npx medusa exec ./src/scripts/fix-image-urls.js
+ *
+ * Orders are handled too, and they are a separate problem rather than the same
+ * one. A line item copies the product's thumbnail at the moment the order is
+ * placed, so fixing the catalogue does nothing for orders that already exist --
+ * their thumbnail is a snapshot of the old relative path and stays broken in
+ * the admin's order view forever. Those are rewritten in place; no other field
+ * of an order is touched.
  *
  * Idempotent: a url that is already absolute is left exactly as it is, so this
  * can run on every deploy and on a part-converted catalogue.
@@ -98,5 +105,61 @@ export default async function fixImageUrls({
     );
   }
 
-  logger.info("[fix-image-urls] done.");
+  logger.info("[fix-image-urls] products done.");
+
+  await fixOrderThumbnails(container, logger);
+}
+
+/**
+ * Rewrite the thumbnail each order line item captured when it was created.
+ *
+ * Only the thumbnail is written. An order is a record of something that
+ * happened and its prices, quantities and totals are not this script's
+ * business — the image is the one field that points somewhere rather than
+ * stating a fact.
+ */
+async function fixOrderThumbnails(container: MedusaContainer, logger: any) {
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+  const orderModuleService: any = container.resolve(Modules.ORDER);
+
+  const take = 100;
+  const orders: any[] = [];
+  let skip = 0;
+  let count: number | undefined;
+
+  for (;;) {
+    const { data, metadata } = await query.graph({
+      entity: "order",
+      fields: ["id", "display_id", "items.id", "items.thumbnail"],
+      pagination: { skip, take },
+    });
+    orders.push(...(data ?? []));
+    count = metadata?.count ?? count;
+    if (!data?.length) break;
+    skip += take;
+    if (count !== undefined && orders.length >= count) break;
+  }
+
+  const updates: { selector: { id: string }; data: { thumbnail: string } }[] = [];
+
+  for (const order of orders) {
+    for (const item of order.items ?? []) {
+      const next = toAbsoluteMediaUrl(item.thumbnail);
+      if (next && next !== item.thumbnail) {
+        updates.push({ selector: { id: item.id }, data: { thumbnail: next } });
+      }
+    }
+  }
+
+  if (!updates.length) {
+    logger.info(
+      `[fix-image-urls] ${orders.length} order(s) checked, every line item thumbnail is already absolute.`
+    );
+    return;
+  }
+
+  await orderModuleService.updateOrderLineItems(updates);
+  logger.info(
+    `[fix-image-urls] rewrote ${updates.length} line item thumbnail(s) across ${orders.length} order(s).`
+  );
 }

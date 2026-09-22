@@ -151,10 +151,16 @@ export const campaignPages: CampaignPage[] = [
         label: "Maroon",
         note: "The classic bridal red.",
         image: "/media/uploads/2025/02/red-bridal-nightwear.jpg",
-        // Six model photos supplied by the owner on 22 September 2026. They
-        // show the robe, the cami top and the trousers; the flat-lay stays
-        // last so all five pieces are seen, not just claimed.
+        // Photos supplied by the owner on 22 September 2026. The collage is
+        // the featured image by the owner's choice: it is the one picture
+        // that shows the pieces worn in their combinations. The flat-lay
+        // stays last so all five pieces are seen laid out, not just claimed.
         photos: [
+          {
+            src: "/media/campaign/bridal-silk-maroon/set-collage.webp",
+            alt: "Collage of the maroon set worn: the robe tied over the set, the cami top with the shorts, the cami top with the trousers, the robe from behind, and close-ups of the lace",
+            fit: "contain",
+          },
           {
             src: "/media/campaign/bridal-silk-maroon/front.jpg",
             alt: "The maroon set worn with the robe tied over the cami top and trousers, seen from the front",

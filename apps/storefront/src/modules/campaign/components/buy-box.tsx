@@ -248,12 +248,12 @@ export default function BuyBox({
   return (
     <section id="buy" className="content-container pb-10 pt-6 small:pb-16 small:pt-12">
       <div className="grid grid-cols-1 gap-8 small:grid-cols-[1.05fr_1fr] small:items-start small:gap-14">
-        {/* Gallery. 4:5 on phones so the price is one thumb-scroll away, a
-            little taller beside the panel on desktop. Model photos are 9:16
-            and crop from the top; the square flat-lay is letterboxed instead
-            so no piece is cut off. */}
+        {/* Gallery. Square, so the price is one thumb-scroll away on a phone
+            and the near-square collage that leads it is shown whole. Model
+            photos are 9:16 and crop from the top; anything marked "contain"
+            is letterboxed instead so no piece is cut off. */}
         <div className="flex flex-col gap-3">
-          <div className="relative aspect-[4/5] w-full overflow-hidden bg-cream-200 small:aspect-[3/4]">
+          <div className="relative aspect-square w-full overflow-hidden bg-cream-200">
             {photo && (
               // Plain <img>: next/image is unoptimized on this host and the
               // hero must not wait on hydration.

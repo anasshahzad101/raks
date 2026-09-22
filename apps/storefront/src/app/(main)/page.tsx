@@ -50,7 +50,7 @@ const OFFERS = [
   },
   {
     kicker: "Everyday",
-    title: "Comfort basics from Rs 990",
+    title: "Comfort basics from Rs 1,299",
     cta: "Shop basics",
     href: "/shop/",
     bg: "#fffdf9",

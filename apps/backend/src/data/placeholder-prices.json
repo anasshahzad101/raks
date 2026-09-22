@@ -12,121 +12,124 @@
     "Editing this file is all that is needed; nothing else references these",
     "numbers. Prices are whole PKR, the same units as medusa-products.json.",
     "",
-    "A variant that already has a real price is never overwritten by these."
+    "A variant that already has a real price is never overwritten by these.",
+    "",
+    "September 2026: these were raised 30% with the rest of the catalogue,",
+    "rounded to the nearest price ending in 99. They are still placeholders."
   ],
   "currency": "pkr",
   "products": {
     "medium-waist-lining-cotton-soft-comfortable-underwear": {
       "title": "Medium Waist Lining Cotton Soft Comfortable Underwear",
-      "price": 500
+      "price": 699
     },
     "belleza-lingerie-sports-bra-911": {
       "title": "Shop RAKS Lingerie Sports Bra - Order Online Now",
-      "price": 4000
+      "price": 5199
     },
     "belleza-lingerie-sports-bra-824": {
       "title": "RAKS Lingerie Sports Bra",
-      "price": 4000
+      "price": 5199
     },
     "yarn-french-open-bra-sleepwear-sheer-sexy-lingerie": {
       "title": "Yarn French Open Bra Sleepwear",
-      "price": 2200
+      "price": 2899
     },
     "hot-babydoll-lingerie-set": {
       "title": "Hot Desire",
-      "price": 2200
+      "price": 2899
     },
     "bold-flower-embroidered-transparent-lingerie-sexy-elegant": {
       "title": "Bold Flower Embroidered Transparent Short Lingerie",
-      "price": 2200
+      "price": 2899
     },
     "creed-flower-embroidered-transparent-lingerie-feminine-sexy": {
       "title": "Creed Flower Embroidered Transparent Short Lingerie",
-      "price": 2200
+      "price": 2899
     },
     "eloria-cami-set-soft-chic-sleepwear": {
       "title": "Eloria Cami Set – Soft & Chic Sleepwear",
-      "price": 2200
+      "price": 2899
     },
     "cami-set-sleepwear": {
       "title": "2PCS Net Silk Cami Set – Soft & Elegant",
-      "price": 2200
+      "price": 2899
     },
     "2pcs-silk-net-embroidered-cami-set": {
       "title": "Carmen 2PCS Silk Net Embroidered Cami Set – Elegant and Comfortable",
-      "price": 2200
+      "price": 2899
     },
     "ice-net-transparent-lingerie": {
       "title": "Ice Net Transparent Lingerie – Chic & Flirty",
-      "price": 2150
+      "price": 2799
     },
     "zipper-style-short-lingerie": {
       "title": "Front Zipper Style Short Lingerie",
-      "price": 2200
+      "price": 2899
     },
     "erotic-front-open-transparent-lingerie": {
       "title": "Erotic Front Open Transparent Lingerie",
-      "price": 2200
+      "price": 2899
     },
     "bowknot-sling-front-open-short-lingerie": {
       "title": "Bowknot Sling Front Open Short Lingerie",
-      "price": 2200
+      "price": 2899
     },
     "erotic-crossed-lines-sexy-strappy-lingerie": {
       "title": "Erotic Crossed Lines Sexy Strappy Lingerie",
-      "price": 2200
+      "price": 2899
     },
     "jelka-axe-short-lingerie": {
       "title": "Red Bridal Short Lingerie",
-      "price": 2200
+      "price": 2899
     },
     "love-black-transparent-lingerie": {
       "title": "Love Black Transparent Lingerie",
-      "price": 2200
+      "price": 2899
     },
     "lenceria-sexy-short-lingerie": {
       "title": "Lencería Sexy Short Lingerie",
-      "price": 2200
+      "price": 2899
     },
     "cozy-hands-free-pumping-nursing-bra": {
       "title": "The Cozy Hands-Free Pumping and Nursing Bra",
-      "price": 4000
+      "price": 5199
     },
     "maroon-silk-pjs-pakistan": {
       "title": "Maroon Silk PJs",
-      "price": 4300
+      "price": 5599
     },
     "mocha-silk-pjs": {
       "title": "Mocha Silk Pyjama for Pakistani Ladies | RAKS",
-      "price": 4300
+      "price": 5599
     },
     "teal-silk-solid-pyjama-set-for-pakistani-ladies": {
       "title": "Teal Silk Solid Pyjama Set for Pakistani Ladies",
-      "price": 4300
+      "price": 5599
     },
     "coal-silk-pjs-nightwear-set": {
       "title": "Coal Silk Pjs | Solid Pyjama Set for Pakistani Girls",
-      "price": 4300
+      "price": 5599
     },
     "beige-silk-pjs-sleepwear-set": {
       "title": "Beige Silk Pjs",
-      "price": 4300
+      "price": 5599
     },
     "animal-print-summer-linen-pjs": {
       "title": "Animal Print Summer Linen PJs",
-      "price": 4300
+      "price": 5599
     },
     "blue-floral-summer-linen-pjs": {
       "title": "Blue Floral Summer Linen PJs",
-      "price": 4300
+      "price": 5599
     },
     "bloome-rose-summer-linen-pjs": {
       "title": "Bloome Rose Summer Linen PJs",
-      "price": 4300
+      "price": 5599
     },
     "white-roselle-summer-linen-pjs": {
       "title": "White Roselle Summer Linen PJs",
-      "price": 4300
+      "price": 5599
     }
   }
 }

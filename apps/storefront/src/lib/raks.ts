@@ -160,9 +160,20 @@ export const YEAR = new Date().getFullYear()
 export const SEO_TITLE_TEMPLATE = `%s | ${BRAND.name}`
 export const SEO_DEFAULT_TITLE = `${BRAND.name} — ${BRAND.tagline}`
 
-/** Build an absolute URL from a site-relative path. */
+/**
+ * Build an absolute URL from a site-relative path.
+ *
+ * Already-absolute input is returned untouched. That matters because product
+ * image urls are stored absolute in Medusa — they have to be, or the admin
+ * renders every image broken — and both the OpenGraph image and the Product
+ * schema's `image` array pass them through here. Without this guard they would
+ * come out as `https://raks.pkhttps://raks.pk/media/…`, which is exactly the
+ * kind of thing that is invisible on the page and wrong in every crawler.
+ */
 export const absoluteUrl = (path = "/") =>
-  `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`
+  /^https?:\/\//i.test(path)
+    ? path
+    : `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`
 
 /** Canonical URL for a product. */
 export const productUrl = (handle: string) => `/product/${handle}/`

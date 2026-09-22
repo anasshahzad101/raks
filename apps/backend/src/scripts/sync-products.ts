@@ -10,6 +10,7 @@ import {
 } from "@medusajs/medusa/core-flows";
 import { readFileSync } from "fs";
 import path from "path";
+import { toAbsoluteMediaUrl } from "../lib/media-url";
 
 /**
  * Put what `data/medusa-products.json` describes into Medusa.
@@ -211,8 +212,12 @@ export default async function syncProducts({
         category_ids: (p.categories || [])
           .map((h) => categoryId.get(h))
           .filter(Boolean),
-        thumbnail: p.thumbnail || undefined,
-        images: (p.images || []).map((url) => ({ url })),
+        // Absolute, so the Medusa admin can load them. The source file stays
+        // relative; see lib/media-url.ts for why the conversion happens here.
+        thumbnail: toAbsoluteMediaUrl(p.thumbnail) || undefined,
+        images: (p.images || []).map((url) => ({
+          url: toAbsoluteMediaUrl(url) as string,
+        })),
         options: p.options.map((o) => ({ title: o.title, values: o.values })),
         variants: priced.map((v) => ({
           title: v.title,

@@ -5,7 +5,7 @@
     "buildCommand": "npm run build && mkdir -p .medusa/server/src && cp -r src/data .medusa/server/src/ && cd .medusa/server && npm install --omit=dev --no-audit --no-fund"
   },
   "deploy": {
-    "startCommand": "cd .medusa/server && npx medusa db:migrate && (npx medusa exec ./src/scripts/sync-products.js || echo '[startup] sync-products failed') && (npx medusa exec ./src/scripts/backfill-prices.js || echo '[startup] backfill-prices failed') && (npx medusa exec ./src/scripts/fix-product-claims.js || echo '[startup] fix-product-claims failed') && (npx medusa exec ./src/scripts/ensure-shipping-options.js || echo '[startup] ensure-shipping-options failed') && NODE_OPTIONS=--max-old-space-size=768 npx medusa start",
+    "startCommand": "cd .medusa/server && npx medusa db:migrate && (npx medusa exec ./src/scripts/sync-products.js || echo '[startup] sync-products failed') && (npx medusa exec ./src/scripts/backfill-prices.js || echo '[startup] backfill-prices failed') && (npx medusa exec ./src/scripts/fix-product-claims.js || echo '[startup] fix-product-claims failed') && (npx medusa exec ./src/scripts/fix-image-urls.js || echo '[startup] fix-image-urls failed') && (npx medusa exec ./src/scripts/ensure-shipping-options.js || echo '[startup] ensure-shipping-options failed') && NODE_OPTIONS=--max-old-space-size=768 npx medusa start",
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 3
   }

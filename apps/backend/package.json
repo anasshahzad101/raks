@@ -25,7 +25,8 @@
     "backfill:prices": "medusa exec ./src/scripts/backfill-prices.ts",
     "ensure:shipping": "medusa exec ./src/scripts/ensure-shipping-options.ts",
     "sync:products": "medusa exec ./src/scripts/sync-products.ts",
-    "fix:claims": "medusa exec ./src/scripts/fix-product-claims.ts"
+    "fix:claims": "medusa exec ./src/scripts/fix-product-claims.ts",
+    "fix:images": "medusa exec ./src/scripts/fix-image-urls.ts"
   },
   "dependencies": {
     "@medusajs/admin-sdk": "2.16.0",

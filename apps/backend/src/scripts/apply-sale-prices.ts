@@ -229,22 +229,25 @@ export default async function applySalePrices({
     const list = lists.find((l) => l.title === sale.title);
 
     if (!list) {
+      // `type` is not declared on the workflow's input type, but the workflow
+      // hands the object through to the pricing module unchanged and the
+      // module honours it — a list created this way reports type "sale",
+      // which is what makes the storefront strike the regular price through
+      // rather than replace it. Held in a variable so the compiler's excess
+      // property check on object literals does not reject it.
+      const priceListData = {
+        title: sale.title,
+        description: sale.description ?? sale.id,
+        type: "sale" as const,
+        status: "active" as const,
+        prices: eligible.map((v) => ({
+          variant_id: v.id,
+          amount: sale.sale,
+          currency_code: currency,
+        })),
+      };
       await createPriceListsWorkflow(container).run({
-        input: {
-          price_lists_data: [
-            {
-              title: sale.title,
-              description: sale.description ?? sale.id,
-              type: "sale",
-              status: "active",
-              prices: eligible.map((v) => ({
-                variant_id: v.id,
-                amount: sale.sale,
-                currency_code: currency,
-              })),
-            },
-          ],
-        },
+        input: { price_lists_data: [priceListData] },
       });
       logger.info(
         `${tag} created price list "${sale.title}" with ${eligible.length} price(s) at Rs ${sale.sale}.`

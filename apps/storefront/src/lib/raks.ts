@@ -123,6 +123,15 @@ export const BUSINESS_FACTS = {
   ],
 } as const
 
+/** The support number as digits only, which is the form wa.me links take. */
+export const WHATSAPP_NUMBER = BUSINESS_FACTS.telephone.replace(/\D/g, "")
+
+/** A WhatsApp chat link to the shop, optionally with a prefilled message. */
+export const whatsappUrl = (text?: string) =>
+  `https://wa.me/${WHATSAPP_NUMBER}${
+    text ? `?text=${encodeURIComponent(text)}` : ""
+  }`
+
 /**
  * Delivery, payment and returns promise. One source, because these numbers were
  * previously retyped by hand across pages, category copy, llms.txt and agents.md

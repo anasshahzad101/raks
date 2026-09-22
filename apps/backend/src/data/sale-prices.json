@@ -1,0 +1,15 @@
+{
+  "currency": "pkr",
+  "sales": [
+    {
+      "id": "bridal-silk-set-2026-09",
+      "active": true,
+      "title": "Bridal Silk 5-Piece Set — sale",
+      "description": "Royal Bridal Silk 5-Piece Nightgown Set at Rs 3,199 against a regular price of Rs 4,999. Managed by src/scripts/apply-sale-prices.ts from src/data/sale-prices.json on every deploy — edit the file, not this list.",
+      "handle": "bridal-silk-5pcs-nightgown-set",
+      "regular": 4999,
+      "sale": 3199,
+      "previous": [3199, 3799]
+    }
+  ]
+}

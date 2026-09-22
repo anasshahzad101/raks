@@ -8,6 +8,15 @@ type OptionSelectProps = {
   updateOption: (title: string, value: string) => void
   title: string
   disabled: boolean
+  /**
+   * Rendered where the old "Size guide" label sat.
+   *
+   * That label was a <span> with `cursor-pointer` and an underline and no
+   * handler — it looked like a link on every sized product and did nothing.
+   * It is a slot now, so the caller decides whether there is anything real to
+   * put there, and nothing renders when there is not.
+   */
+  sizeGuide?: React.ReactNode
   "data-testid"?: string
 }
 
@@ -16,24 +25,19 @@ const OptionSelect: React.FC<OptionSelectProps> = ({
   current,
   updateOption,
   title,
+  sizeGuide,
   "data-testid": dataTestId,
   disabled,
 }) => {
   const filteredOptions = (option.values ?? []).map((v) => v.value)
 
-  const isSize = /size/i.test(title)
-
   return (
     <div className="flex flex-col gap-y-3">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-4">
         <span className="text-[12px] uppercase tracking-[0.16em] text-ink font-medium">
           Select {title}
         </span>
-        {isSize && (
-          <span className="text-[12px] text-gold border-b border-bronze-200 cursor-pointer">
-            Size guide
-          </span>
-        )}
+        {sizeGuide}
       </div>
       <div className="flex flex-wrap gap-2.5" data-testid={dataTestId}>
         {filteredOptions.map((v) => {

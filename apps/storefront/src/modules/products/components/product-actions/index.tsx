@@ -14,6 +14,24 @@ import ProductPrice from "../product-price"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
 import { getProductTeaser } from "@lib/util/product-teaser"
+import {
+  getProductSizes,
+  isBraSized,
+  optionValuesForSize,
+} from "@lib/util/product-sizes"
+import dynamicImport from "next/dynamic"
+
+/**
+ * Loaded only when the shopper opens it.
+ *
+ * The finder pulls in the sizing maths and its own dialog markup, and most
+ * visitors to a bra page never open it — there is no reason for it to be in the
+ * bundle every product page ships.
+ */
+const SizeFinderModal = dynamicImport(
+  () => import("@modules/sizing/components/size-finder-modal"),
+  { ssr: false }
+)
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -39,6 +57,7 @@ export default function ProductActions({
   const searchParams = useSearchParams()
 
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
+  const [sizeFinderOpen, setSizeFinderOpen] = useState(false)
   const [isAdding, setIsAdding] = useState(false)
   const [quantity, setQuantity] = useState(1)
   const [favourite, setFavourite] = useState(false)
@@ -61,6 +80,41 @@ export default function ProductActions({
       return isEqual(variantOptions, options)
     })
   }, [product.variants, options])
+
+  /**
+   * Whether the bra size calculator can honestly answer for this product.
+   *
+   * Bras only. It returns a band and a cup, and nothing maps those onto a
+   * nightdress sold in S/M/L — see `isBraSized`.
+   */
+  const showSizeFinder = useMemo(() => isBraSized(product), [product])
+
+  /** Size labels this product is listed in, e.g. ["34B","34C"]. */
+  const productSizes = useMemo(() => getProductSizes(product), [product])
+
+  /**
+   * The first size option AS DISPLAYED, which is where the trigger renders.
+   *
+   * Not `getSizeOptionIds()[0]` — that list is sorted band-first so labels read
+   * "34C" rather than "C34", and this product shows Cup Size above Size, so the
+   * trigger would hang off the second row.
+   */
+  const firstSizeOptionId = useMemo(
+    () => (product.options ?? []).find((o) => /size/i.test(o.title ?? ""))?.id,
+    [product]
+  )
+
+  /**
+   * Apply a size chosen in the finder to the option selector.
+   *
+   * Only the size options are set. Colour is left for the shopper, so picking
+   * "34C" on a bra that comes in three colours does not quietly choose one.
+   */
+  const applySize = (label: string) => {
+    const values = optionValuesForSize(product, label)
+    if (!values) return
+    setOptions((prev) => ({ ...prev, ...values }))
+  }
 
   // update the options when a variant is selected
   const setOptionValue = (optionId: string, value: string) => {
@@ -191,6 +245,25 @@ export default function ProductActions({
                 current={options[option.id]}
                 updateOption={setOptionValue}
                 title={option.title ?? ""}
+                // Only on the first size option: a bra has both "Size" and
+                // "Cup Size", and the old label rendered against each of them,
+                // so the row showed "Size guide" twice.
+                sizeGuide={
+                  showSizeFinder && option.id === firstSizeOptionId ? (
+                    <button
+                      type="button"
+                      onClick={() => setSizeFinderOpen(true)}
+                      // Matches the option buttons beside it. While the
+                      // Suspense fallback is on screen every other control is
+                      // disabled, and a finder that opened there would take a
+                      // size and lose it the moment the real component mounts.
+                      disabled={!!disabled || isAdding}
+                      className="shrink-0 border-b border-bronze-200 text-[12px] text-gold transition-colors hover:border-accent hover:text-accent disabled:cursor-default disabled:opacity-40 disabled:hover:border-bronze-200 disabled:hover:text-gold"
+                    >
+                      Find my size
+                    </button>
+                  ) : undefined
+                }
                 data-testid="product-options"
                 disabled={!!disabled || isAdding}
               />
@@ -268,6 +341,15 @@ export default function ProductActions({
           show={!inView}
           optionsDisabled={!!disabled || isAdding}
         />
+
+        {sizeFinderOpen && (
+          <SizeFinderModal
+            productSizes={productSizes}
+            productTitle={product.title ?? ""}
+            onSelectSize={applySize}
+            onClose={() => setSizeFinderOpen(false)}
+          />
+        )}
       </div>
     </>
   )

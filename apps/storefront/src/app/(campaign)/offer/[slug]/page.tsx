@@ -168,7 +168,12 @@ export default async function CampaignOfferPage(props: Props) {
   const product = await loadProduct(page)
   if (!product?.id) notFound()
 
-  const variants = toCampaignVariants(product, page)
+  // Only the colours the campaign names. The bridal set sells in three, and
+  // the ad is for maroon, so the other two do not appear here at all.
+  const variants = toCampaignVariants(product, page).filter(
+    (v) =>
+      !page.colours.length || page.colours.some((c) => same(c.value, v.colour))
+  )
   if (!variants.length) notFound()
 
   const colours: CampaignColourOption[] = page.colours
@@ -261,18 +266,23 @@ export default async function CampaignOfferPage(props: Props) {
         </div>
       </section>
 
-      {/* Colours */}
-      <section className="border-y border-cream-200 bg-[#fffdf9]">
-        <div className="content-container py-12 small:py-16">
-          <SectionHeading
-            eyebrow={`${colours.length} colours`}
-            title="Pick yours."
-          />
-          <div className="mt-8">
-            <ColourGallery colours={colours} productTitle={product.title ?? ""} />
+      {/* Colours: only worth a section when there is a choice to make */}
+      {colours.length > 1 && (
+        <section className="border-y border-cream-200 bg-[#fffdf9]">
+          <div className="content-container py-12 small:py-16">
+            <SectionHeading
+              eyebrow={`${colours.length} colours`}
+              title="Pick yours."
+            />
+            <div className="mt-8">
+              <ColourGallery
+                colours={colours}
+                productTitle={product.title ?? ""}
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Sizing + how it works */}
       <section className="content-container grid grid-cols-1 gap-10 py-12 small:grid-cols-2 small:gap-16 small:py-16">
@@ -344,14 +354,15 @@ export default async function CampaignOfferPage(props: Props) {
           Five pieces, one parcel, paid at your door.
         </h2>
         <p className="mx-auto mt-4 max-w-[460px] text-[15px] font-light leading-[1.75] text-[#5c4d42]">
-          Pick a colour and a size above, add your address, and it is on its
-          way.
+          {colours.length > 1
+            ? "Pick a colour and a size above, add your address, and it is on its way."
+            : "Pick your size above, add your address, and it is on its way."}
         </p>
         <a
           href="#buy"
           className="mt-7 inline-flex h-[54px] items-center justify-center bg-accent px-10 text-[12.5px] font-medium uppercase tracking-[0.16em] text-white transition-colors hover:bg-burgundy-dark"
         >
-          Choose colour and size
+          {colours.length > 1 ? "Choose colour and size" : "Choose your size"}
         </a>
       </section>
     </div>

@@ -279,11 +279,12 @@ export default function BuyBox({
             </p>
           </div>
 
-          {/* Colour */}
+          {/* Colour: a picker when there is a choice, a plain label when not */}
           <div className="flex flex-col gap-y-3">
             <span className="text-[12px] font-medium uppercase tracking-[0.16em] text-ink">
               Colour · <span className="font-normal text-ink/60">{activeColour?.label}</span>
             </span>
+            {colours.length > 1 && (
             <div className="flex flex-wrap gap-2.5">
               {colours.map((c) => {
                 const selected = same(c.value, colour)
@@ -315,6 +316,7 @@ export default function BuyBox({
                 )
               })}
             </div>
+            )}
           </div>
 
           {/* Size */}

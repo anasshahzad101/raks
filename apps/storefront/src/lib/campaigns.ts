@@ -54,6 +54,11 @@ export type CampaignPage = {
   reassurance: string[]
   pieces: { name: string; detail: string }[]
   reasons: { heading: string; body: string }[]
+  /**
+   * The colours this page sells. Variants in any other colour are left off
+   * the page entirely, so an ad for one colour cannot sell another. With a
+   * single entry the page shows no colour picker and no colour section.
+   */
   colours: CampaignColour[]
   sizing: { heading: string; body: string }
   gift?: string
@@ -122,24 +127,15 @@ export const campaignPages: CampaignPage[] = [
         body: `Every order leaves in plain packaging with no branding, and you pay the rider in cash. Delivery takes ${deliveryWindow()} anywhere in Pakistan.`,
       },
     ],
+    // Maroon only, by the owner's decision on 22 September 2026. The product
+    // also comes in blue and black and stays on sale in all three on the
+    // product page; the ad, and so this page, sells the maroon set.
     colours: [
       {
         value: "Maroon",
         label: "Maroon",
         note: "The classic bridal red.",
         image: "/media/uploads/2025/02/red-bridal-nightwear.jpg",
-      },
-      {
-        value: "Blue",
-        label: "Navy blue",
-        note: "Deep and rich, for a bride who wants something different.",
-        image: "/media/uploads/2025/02/blue-nightgown.jpg",
-      },
-      {
-        value: "Black",
-        label: "Black",
-        note: "Timeless. The one you will keep reaching for.",
-        image: "/media/uploads/2025/02/black-nightgown.jpg",
       },
     ],
     sizing: {
@@ -149,8 +145,8 @@ export const campaignPages: CampaignPage[] = [
     gift: "Buying it for the bride? Put her name, number and address at checkout and we deliver straight to her.",
     steps: [
       {
-        heading: "Choose colour and size",
-        body: "Maroon, navy blue or black. Medium or Large.",
+        heading: "Choose your size",
+        body: "Medium or Large. The set comes in bridal maroon.",
       },
       {
         heading: "Enter your details",

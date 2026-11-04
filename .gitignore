@@ -62,3 +62,8 @@ Thumbs.db
 **/.DS_Store
 # TypeScript incremental build cache
 *.tsbuildinfo
+
+# Cloudflare: adapter and wrangler output, local secrets
+.open-next
+.wrangler
+.dev.vars*

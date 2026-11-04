@@ -31,8 +31,26 @@ type AnyRecord = Record<string, any>
  * cwd is the storefront directory for both `next build` and `next start` (the
  * root scripts run through `npm --workspace @dtc/storefront`), but the repo-root
  * candidate is kept so an unexpected cwd fails over instead of failing.
+ *
+ * A Cloudflare Worker has no disk, so there the same files are fetched from the
+ * Worker's static assets, under a path only the Worker itself can reach (see
+ * scripts/copy-catalog-to-assets.mjs). They stay out of the bundle either way.
  */
-function loadSnapshot(file: string): AnyRecord[] {
+async function loadSnapshot(file: string): Promise<AnyRecord[]> {
+  const assets = (globalThis as AnyRecord)[
+    Symbol.for("__cloudflare-context__")
+  ]?.env?.ASSETS
+
+  if (assets) {
+    const res = await assets.fetch(
+      `http://assets.local/cdn-cgi/catalog/${file}`
+    )
+    if (!res.ok) {
+      throw new Error(`Catalog snapshot "${file}" missing: ${res.status}`)
+    }
+    return (await res.json()) as AnyRecord[]
+  }
+
   const candidates = [
     path.join(process.cwd(), "src/content/catalog", file),
     path.join(process.cwd(), "apps/storefront/src/content/catalog", file),
@@ -55,14 +73,34 @@ function loadSnapshot(file: string): AnyRecord[] {
   )
 }
 
-const productsJson = loadSnapshot("products.json")
-const categoriesJson = loadSnapshot("categories.json")
-const collectionsJson = loadSnapshot("collections.json")
-const regionsJson = loadSnapshot("regions.json")
+let products: AnyRecord[] = []
+let categories: AnyRecord[] = []
+let collections: AnyRecord[] = []
+let regions: AnyRecord[] = []
+let loaded = false
 
-const products = productsJson as AnyRecord[]
-const collections = collectionsJson as AnyRecord[]
-const regions = regionsJson as AnyRecord[]
+/**
+ * Load on first use, not at import: this module is imported in every mode, and a
+ * Worker cannot fetch while modules load. The result is cached but the pending
+ * promise is not, because a Worker must not await another request's I/O.
+ */
+async function ensureLoaded(): Promise<void> {
+  if (loaded) return
+
+  const [productsJson, categoriesJson, collectionsJson, regionsJson] =
+    await Promise.all([
+      loadSnapshot("products.json"),
+      loadSnapshot("categories.json"),
+      loadSnapshot("collections.json"),
+      loadSnapshot("regions.json"),
+    ])
+
+  products = productsJson
+  categories = linkCategories(categoriesJson)
+  collections = collectionsJson
+  regions = regionsJson
+  loaded = true
+}
 
 /**
  * Rebuild the full `parent_category` chain.
@@ -77,8 +115,8 @@ const regions = regionsJson as AnyRecord[]
  * The id graph is intact, so relink the objects by `parent_category_id`. Cloned
  * first so the JSON import is not mutated, and depth-guarded against cycles.
  */
-const categories: AnyRecord[] = (() => {
-  const list = (categoriesJson as AnyRecord[]).map((c) => ({ ...c }))
+function linkCategories(categoriesJson: AnyRecord[]): AnyRecord[] {
+  const list = categoriesJson.map((c) => ({ ...c }))
   const byId = new Map(list.map((c) => [c.id, c]))
 
   for (const category of list) {
@@ -95,7 +133,7 @@ const categories: AnyRecord[] = (() => {
   }
 
   return list
-})()
+}
 
 /** Normalise a query value that may arrive as a scalar or an array. */
 function toArray(value: unknown): string[] {
@@ -169,10 +207,12 @@ function filterProducts(query: AnyRecord): AnyRecord[] {
  * Answer a Store API request from the snapshot.
  * Returns `undefined` for anything this module does not model.
  */
-export function snapshotFetch(
+export async function snapshotFetch(
   endpoint: string,
   query: AnyRecord = {}
-): unknown | undefined {
+): Promise<unknown | undefined> {
+  await ensureLoaded()
+
   // Strip any query string and normalise trailing slashes.
   const pathname = endpoint.split("?")[0].replace(/\/+$/, "")
 
@@ -298,9 +338,11 @@ export type CatalogVariant = {
  *
  * Returns undefined for an unknown variant, which the caller rejects.
  */
-export function findCatalogVariant(
+export async function findCatalogVariant(
   variantId: string
-): CatalogVariant | undefined {
+): Promise<CatalogVariant | undefined> {
+  await ensureLoaded()
+
   for (const product of products) {
     for (const variant of (product.variants ?? []) as AnyRecord[]) {
       if (variant?.id !== variantId) continue

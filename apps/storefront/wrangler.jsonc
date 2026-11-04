@@ -1,0 +1,32 @@
+// Cloudflare Workers config, built with the OpenNext adapter.
+//
+// Workers Builds settings this file relies on (Settings > Build in the dashboard),
+// with Root directory left at /, so npm installs from the root lockfile:
+//   Build command:  cd apps/storefront && npm run build:cf
+//   Deploy command: cd apps/storefront && npx opennextjs-cloudflare deploy
+// Plain `npx wrangler deploy` from the root fails: Wrangler refuses to run in the
+// root of a workspace.
+{
+	"$schema": "../../node_modules/wrangler/config-schema.json",
+	"main": ".open-next/worker.js",
+	// Must match the Worker's name in the Cloudflare dashboard, and the service
+	// below must match this. A mismatch fails the deploy with error 10143.
+	"name": "raks",
+	"compatibility_date": "2026-11-03",
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"services": [
+		{
+			"binding": "WORKER_SELF_REFERENCE",
+			"service": "raks"
+		}
+	],
+	// Without this, a deploy deletes any variable set in the dashboard but not here.
+	"keep_vars": true,
+	"observability": {
+		"enabled": true
+	}
+}

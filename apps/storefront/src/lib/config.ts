@@ -27,7 +27,7 @@ sdk.client.fetch = async <T>(
   if (USE_CATALOG_SNAPSHOT && typeof input === "string") {
     const method = (init?.method ?? "GET").toUpperCase()
     if (method === "GET") {
-      const result = snapshotFetch(input, (init?.query as any) ?? {})
+      const result = await snapshotFetch(input, (init?.query as any) ?? {})
       if (result !== undefined) {
         return result as T
       }
